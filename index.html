@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ghana Website Leads Tracker</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; background: #0e1012; color: #e8ecef; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 26px 22px 40px; }
+.tabs { display: flex; background: #1b1f22; border: 1px solid #2c3338; border-radius: 999px; padding: 4px; }
+.tabs button { flex: 1; background: transparent; color: #9aa5ad; border: 0; border-radius: 999px; padding: 12px 10px; font-size: 15px; font-weight: 600; cursor: pointer; }
+.tabs button.active { background: #ffffff; color: #111111; }
+.stats { display: grid; grid-template-columns: repeat(5, 1fr); background: #1b1f22; border: 1px solid #2c3338; border-radius: 14px; overflow: hidden; margin-top: 22px; }
+.stat { padding: 18px 20px 16px; border-left: 1px solid #2c3338; }
+.stat:first-child { border-left: 0; }
+.stat-label { display: block; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: #8a949c; margin-bottom: 8px; }
+.stat-num { display: block; font-size: 28px; font-weight: 700; color: #ffffff; line-height: 1.1; }
+.stat-num i { font-style: normal; font-size: 18px; color: #6b767e; font-weight: 400; }
+.stat-cap { display: block; font-size: 13px; color: #8a949c; margin-top: 6px; }
+.process { color: #9aa5ad; font-size: 14px; line-height: 1.5; margin: 18px 2px 0; }
+.search-row { display: flex; gap: 16px; margin-top: 22px; }
+.search-row > div { flex: 1; }
+.search-row label, .field-label { display: block; color: #c7cfd6; font-size: 13px; margin-bottom: 7px; }
+input, select, textarea { background: #1b1f22; border: 1px solid #2c3338; border-radius: 10px; color: #e8ecef; padding: 12px 14px; font-size: 14px; width: 100%; }
+input::placeholder, textarea::placeholder { color: #6b767e; }
+select { appearance: none; }
+.pills { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+.pills button { background: #1b1f22; border: 1px solid #2c3338; color: #c7cfd6; border-radius: 999px; padding: 9px 16px; font-size: 14px; cursor: pointer; }
+.pills button.active { background: #ffffff; color: #111111; border-color: #ffffff; }
+.count-row { display: flex; align-items: center; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+.count-row .count { font-size: 15px; font-weight: 600; color: #ffffff; }
+.count-row .spacer { flex: 1; }
+.btn-import { background: #2a2f33; color: #ffffff; border: 1px solid #3a4147; border-radius: 999px; padding: 10px 20px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.btn-csv { background: transparent; color: #4caf50; border: 1px solid #2f7d32; border-radius: 999px; padding: 10px 20px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.btn-ghost { background: transparent; color: #8a949c; border: 1px solid #2c3338; border-radius: 999px; padding: 8px 16px; font-size: 13px; cursor: pointer; }
+button { font-family: inherit; }
+main { margin-top: 18px; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; background: #15181b; border: 1px solid #2c3338; border-radius: 12px; overflow: hidden; min-width: 640px; }
+th { background: #1b1f22; color: #8a949c; text-align: left; padding: 11px 12px; font-size: 11px; letter-spacing: .07em; text-transform: uppercase; }
+td { padding: 12px; border-top: 1px solid #262c31; font-size: 13px; vertical-align: top; color: #d5dbdf; overflow-wrap: anywhere; word-break: break-word; }
+tr.detail td { background: #1b1f22; }
+td .name { font-weight: 700; color: #ffffff; cursor: pointer; }
+td .score { font-weight: 700; color: #ffffff; font-size: 15px; }
+td .sub { color: #8a949c; font-size: 12px; }
+.pill { display: inline-block; border-radius: 20px; padding: 2px 9px; font-size: 12px; font-weight: 600; }
+.pill.new { background: #2a2f33; color: #9aa5ad; }
+.pill.built { background: #1d3a5f; color: #7fb3e8; }
+.pill.contacted { background: #173d24; color: #6fce8f; }
+.pill.booked { background: #4a3a10; color: #e8c15a; }
+.pill.noreply { background: #4a3410; color: #e8a54b; }
+.pill.declined { background: #4a1a1a; color: #e88a8a; }
+.status-btns { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
+.status-btns button { padding: 5px 9px; font-size: 12px; border-radius: 6px; background: #22272b; color: #c7cfd6; border: 1px solid #2c3338; cursor: pointer; }
+.status-btns button.on-built { background: #1b4f9c; color: #fff; border-color: #1b4f9c; }
+.status-btns button.on-contacted { background: #1e7a34; color: #fff; border-color: #1e7a34; }
+.status-btns button.on-booked { background: #d9a521; color: #111; border-color: #d9a521; }
+.detail-box { font-size: 13px; line-height: 1.55; color: #c7cfd6; }
+.detail-box b { color: #ffffff; }
+.foot-note { color: #8a949c; font-size: 13px; line-height: 1.6; margin-top: 26px; }
+.card { background: #1b1f22; border: 1px solid #2c3338; border-radius: 12px; padding: 18px; margin-top: 18px; }
+.card h2 { margin: 0 0 12px; font-size: 16px; color: #ffffff; }
+.card label { display: block; font-size: 13px; margin: 10px 0 5px; color: #c7cfd6; }
+.card textarea { min-height: 70px; }
+.card .btn-save { background: #ffffff; color: #111111; border: 0; border-radius: 999px; padding: 10px 20px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 12px; }
+.row { display: flex; gap: 12px; flex-wrap: wrap; }
+.row > div { flex: 1; min-width: 160px; }
+.entry { border-top: 1px solid #2c3338; padding: 12px 0; font-size: 13px; line-height: 1.55; color: #d5dbdf; }
+.entry:first-of-type { border-top: 0; }
+.entry .meta { color: #8a949c; font-size: 12px; }
+.entry button { margin-top: 6px; }
+.linkbtn { color: #7fb3e8; text-decoration: none; font-weight: 600; margin-right: 14px; }
+.modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 50; overflow-y: auto; }
+.modal.open { display: block; }
+.modal-box { background: #1b1f22; border: 1px solid #2c3338; max-width: 860px; margin: 40px auto; border-radius: 14px; padding: 22px; color: #d5dbdf; }
+.modal-box h2 { margin: 0 0 10px; color: #ffffff; }
+.modal-box table { background: #15181b; min-width: 0; }
+.modal-box th { font-size: 12px; }
+.modal-box td { font-size: 12px; }
+.bad { color: #ff8a80; font-weight: 600; }
+.ok { color: #6fce8f; font-weight: 600; }
+.lead-card { background: #1b1f22; border: 1px solid #2c3338; border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; }
+.lead-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.lead-rank { color: #8a949c; font-size: 15px; font-weight: 600; margin-right: 10px; }
+.lead-name { color: #ffffff; font-weight: 700; font-size: 17px; cursor: pointer; }
+.lead-rank, .lead-name, .section-title, h1 { font-family: "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif; }
+.lead-action-btns { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 4px; }
+.lead-action-btns a { border-radius: 999px; padding: 8px 16px; font-size: 14px; font-weight: 600; text-decoration: none; }
+.btn-wa { background: #4caf50; color: #0e1012; }
+.btn-line { background: #22272b; border: 1px solid #2c3338; color: #ffffff; }
+.lead-meta { color: #8a949c; font-size: 13px; margin-top: 6px; }
+.lead-score { color: #c7cfd6; font-size: 13px; text-align: right; white-space: nowrap; }
+.lead-score b { color: #ffffff; }
+.lead-web { margin-top: 10px; font-size: 14px; color: #d5dbdf; line-height: 1.5; }
+.lead-web b { color: #ffffff; }
+.lead-btns { display: flex; gap: 10px; margin-top: 14px; }
+.lead-btns button { flex: 1; background: #22272b; color: #e8ecef; border: 1px solid #2c3338; border-radius: 999px; padding: 11px 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.lead-btns button.on-built { background: #1b4f9c; border-color: #1b4f9c; color: #fff; }
+.lead-btns button.on-contacted { background: #1e7a34; border-color: #1e7a34; color: #fff; }
+.lead-btns button.on-booked { background: #d9a521; border-color: #d9a521; color: #111; }
+.lead-btns2 { margin-top: 8px; }
+.lead-btns2 button { background: transparent; color: #8a949c; padding: 9px 8px; font-size: 13px; }
+.lead-btns2 button.on-noreply { background: #b7791f; border-color: #b7791f; color: #111; }
+.lead-btns2 button.on-declined { background: #a93226; border-color: #a93226; color: #fff; }
+.lead-plain { display: flex; gap: 28px; margin-top: 10px; }
+.lead-plain .plain-opt { color: #8a949c; font-size: 14px; text-decoration: underline; cursor: pointer; }
+.lead-plain .plain-opt.on-noreply { color: #e8a54b; font-weight: 700; }
+.lead-plain .plain-opt.on-declined { color: #e88a8a; font-weight: 700; }
+.lead-detail-toggle { color: #4caf50; font-weight: 600; font-size: 14px; margin-top: 14px; cursor: pointer; display: inline-block; }
+.lead-detail { margin-top: 12px; font-size: 13px; line-height: 1.55; color: #c7cfd6; border-top: 1px solid #2c3338; padding-top: 12px; }
+.lead-detail b { color: #ffffff; }
+.lead-detail p { margin: 0 0 12px; }
+.lead-reset { color: #8a949c; background: none; border: 0; font-size: 12px; cursor: pointer; margin-top: 10px; padding: 0; text-decoration: underline; }
+.section-title { color: #ffffff; font-size: 19px; margin: 26px 0 12px; }
+.dashed-add { display: block; width: 100%; background: transparent; border: 1.5px dashed #2f7d32; color: #4caf50; border-radius: 12px; padding: 15px; font-size: 15px; font-weight: 600; cursor: pointer; }
+.empty-card { background: #1b1f22; border: 1px solid #2c3338; border-radius: 12px; padding: 16px 18px; margin-top: 12px; color: #c7cfd6; font-size: 14px; line-height: 1.55; }
+.form-card { background: #1b1f22; border: 1px solid #2c3338; border-radius: 12px; padding: 18px; margin-top: 12px; }
+.form-card label { display: block; font-size: 13px; margin: 10px 0 5px; color: #c7cfd6; }
+@media (max-width: 720px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .stat:nth-child(3) { border-left: 0; }
+  .stat:nth-child(n+3) { border-top: 1px solid #2c3338; }
+  .search-row { flex-direction: column; }
+  th:nth-child(3), td:nth-child(3), th:nth-child(5), td:nth-child(5) { display: none; }
+}
+.topbar { display: flex; justify-content: flex-end; margin-bottom: 14px; }
+#loginScreen { position: fixed; inset: 0; background: #0e1012; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.login-card { background: #1b1f22; border: 1px solid #2c3338; border-radius: 14px; padding: 30px 26px; width: 360px; max-width: 100%; }
+.login-card h1 { margin: 0 0 6px; font-size: 20px; color: #ffffff; }
+.login-card p { margin: 0 0 18px; color: #8a949c; font-size: 13px; line-height: 1.5; }
+.login-card label { display: block; color: #c7cfd6; font-size: 13px; margin: 12px 0 6px; }
+.login-card .btn-login { width: 100%; background: #ffffff; color: #111111; border: 0; border-radius: 999px; padding: 12px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 18px; }
+#loginErr { color: #ff8a80; font-size: 13px; margin: 12px 0 0; min-height: 18px; }
+</style>
+</head>
+<body>
+<div id="loginScreen"><div class="login-card">
+<h1>Ghana Website Leads Tracker</h1>
+<p>Log in to open your tracker. Only one email can log in.</p>
+<label for="loginEmail">Email</label>
+<input id="loginEmail" type="email" placeholder="Your email" autocomplete="username">
+<label for="loginPass">Password</label>
+<input id="loginPass" type="password" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()">
+<button class="btn-login" onclick="doLogin()">Log in</button>
+<p id="loginErr"></p>
+</div></div>
+<div class="wrap">
+<div class="topbar"><button class="btn-ghost" onclick="doLogout()">Log out</button></div>
+<div class="tabs">
+<button id="tabLeads" class="active" onclick="showTab('leads')">Leads</button>
+<button id="tabFb" onclick="showTab('fb')">Feedback &amp; contracts</button>
+</div>
+
+<div id="pageLeads">
+<div class="stats">
+<div class="stat"><span class="stat-label">Researched</span><span class="stat-num"><b id="stResearched">110</b> <i>/ <span class="tot">110</span></i></span><span class="stat-cap">verified leads</span></div>
+<div class="stat"><span class="stat-label">Site built</span><span class="stat-num"><b id="stBuilt">0</b> <i>/ <span class="tot">110</span></i></span><span class="stat-cap">ready to send</span></div>
+<div class="stat"><span class="stat-label">Contacted</span><span class="stat-num"><b id="stContacted">0</b> <i>/ <span class="tot">110</span></i></span><span class="stat-cap">site sent</span></div>
+<div class="stat"><span class="stat-label">Booked</span><span class="stat-num"><b id="stBooked">0</b> <i>/ <span class="tot">110</span></i></span><span class="stat-cap">paying clients</span></div>
+</div>
+<p class="process">Your process: research &rarr; build the site &rarr; contact them with it finished. Tap a lead&rsquo;s buttons to move it along &mdash; every mark is saved in this browser.</p>
+<div class="search-row">
+<div><label for="tradeSel">Trade / niche</label><select id="tradeSel" onchange="renderLeads()"></select></div>
+<div><label for="citySel">City</label><select id="citySel" onchange="renderLeads()"></select></div>
+</div>
+<div class="pills" id="pills">
+<button data-f="" class="active" onclick="setFilter('', this)">All leads</button>
+<button data-f="new" onclick="setFilter('new', this)">Not contacted (<span id="pcNew">110</span>)</button>
+<button data-f="built" onclick="setFilter('built', this)">Site built (<span id="pcBuilt">0</span>)</button>
+<button data-f="contacted" onclick="setFilter('contacted', this)">Contacted (<span id="pcContacted">0</span>)</button>
+<button data-f="booked" onclick="setFilter('booked', this)">Booked (<span id="pcBooked">0</span>)</button>
+<button data-f="noreply" onclick="setFilter('noreply', this)">No reply (<span id="pcNoreply">0</span>)</button>
+<button data-f="declined" onclick="setFilter('declined', this)">Declined (<span id="pcDeclined">0</span>)</button>
+</div>
+<div class="count-row">
+<span class="count" id="count">110 of 110 leads</span>
+<span class="spacer"></span>
+<button class="btn-import" onclick="openImportChoice()">Import Leads</button>
+<input id="csvFile" type="file" accept=".csv,text/csv" style="display:none" onchange="onImportFile(event)">
+<button class="btn-csv" onclick="downloadCSV()">Download CSV</button>
+</div>
+<main id="cards"></main>
+<p class="foot-note">Lead details from your verified research &mdash; round 1, 21 November 2026 and round 2, 22 November 2026 (all scores /10). In this hosted copy, marks save in this browser only. &nbsp;<button class="btn-ghost" onclick="resetAll()">Reset data</button></p>
+</div>
+
+<div id="pageFb" style="display:none">
+<div class="stats">
+<div class="stat"><span class="stat-label">Feedback logged</span><span class="stat-num"><b id="stFb">0</b></span><span class="stat-cap">entries saved</span></div>
+<div class="stat"><span class="stat-label">Active contracts</span><span class="stat-num"><b id="stContracts">0</b></span><span class="stat-cap">clients on the books</span></div>
+<div class="stat"><span class="stat-label">Monthly recurring</span><span class="stat-num">GH&cent; <b id="stMonthly">0</b></span><span class="stat-cap">from active monthly contracts</span></div>
+<div class="stat"><span class="stat-label">Total earnings</span><span class="stat-num">GH&cent; <b id="stEarnings">0</b></span><span class="stat-cap">from all contracts</span></div>
+<div class="stat"><span class="stat-label">Contracts total</span><span class="stat-num"><b id="stContractsTotal">0</b></span><span class="stat-cap">active, pending &amp; ended</span></div>
+</div>
+<p class="process">Write down what each customer said, the changes you made after, and the contracts you have with them &mdash; everything is saved here, in this browser.</p>
+<div style="margin-top:22px"><label class="field-label" for="fbCustomer">Show one customer</label>
+<select id="fbCustomer" onchange="renderFb()"></select></div>
+<h2 class="section-title">Customer feedback &amp; changes</h2>
+<button class="dashed-add" onclick="openFbForm()">+ Add customer feedback</button>
+<div id="fbForm" class="form-card" style="display:none">
+<label for="fbAddCustomer">Customer</label>
+<select id="fbAddCustomer"></select>
+<label for="fbText">What they said</label>
+<textarea id="fbText" placeholder="What the customer said&hellip;"></textarea>
+<label for="fbChanges">Changes made after</label>
+<textarea id="fbChanges" placeholder="What you changed because of it&hellip;"></textarea>
+<button class="btn-save" id="fbSaveBtn" onclick="addFeedback()">Save feedback</button>
+</div>
+<div id="fbList"></div>
+<h2 class="section-title">Contracts</h2>
+<button class="dashed-add" onclick="openCtForm()">+ Add a contract</button>
+<div id="ctForm" class="form-card" style="display:none">
+<label for="ctCustomer">Customer</label>
+<select id="ctCustomer"></select>
+<label for="ctWhat">What was agreed</label>
+<input id="ctWhat" placeholder="e.g. Full website rebuild + hosting">
+<div class="row">
+<div><label for="ctAmount">Amount (GH&cent;)</label><input id="ctAmount" type="number" min="0" step="1" placeholder="0"></div>
+<div><label for="ctBilling">Billing</label><select id="ctBilling"><option value="monthly">Monthly</option><option value="one-off">One-off</option><option value="yearly">Yearly</option></select></div>
+<div><label for="ctStatus">Status</label><select id="ctStatus"><option value="active">Active</option><option value="pending">Pending</option><option value="ended">Ended</option></select></div>
+</div>
+<div class="row">
+<div><label for="ctStart">Start date</label><input id="ctStart" type="date"></div>
+<div><label for="ctRenew">Renewal date</label><input id="ctRenew" type="date"></div>
+</div>
+<div class="row">
+<div><label for="ctWeb">Website link</label><input id="ctWeb" type="url" placeholder="https://&hellip;"></div>
+<div><label for="ctDrive">Drive link</label><input id="ctDrive" type="url" placeholder="https://drive.google.com/&hellip;"></div>
+</div>
+<label for="ctNotes">Notes</label>
+<textarea id="ctNotes"></textarea>
+<button class="btn-save" id="ctSaveBtn" onclick="addContract()">Save contract</button>
+</div>
+<div id="ctList"></div>
+</div>
+</div>
+
+<div class="modal" id="importModal"><div class="modal-box">
+<h2>Import Leads</h2>
+<div id="importBody"></div>
+<div style="margin-top:14px; display:flex; gap:10px; justify-content:flex-end">
+<button class="btn-ghost" onclick="closeImport()">Cancel</button>
+<button id="confirmImportBtn" class="btn-save" style="margin-top:0" onclick="confirmImport()" disabled>Confirm import</button>
+</div>
+</div></div>
+
+<div class="modal" id="choiceModal"><div class="modal-box" style="max-width:520px">
+<h2>Add a lead</h2>
+<p>How do you want to add it?</p>
+<div style="display:flex; flex-direction:column; gap:10px; margin-top:16px">
+<button class="btn-save" style="margin-top:0" onclick="closeChoice(); document.getElementById('csvFile').click()">Import from CSV</button>
+<button class="btn-save" style="margin-top:0; background:#1b4f9c; color:#fff" onclick="closeChoice(); openManual()">Enter a lead manually</button>
+</div>
+<div style="margin-top:14px; display:flex; justify-content:flex-end">
+<button class="btn-ghost" onclick="closeChoice()">Cancel</button>
+</div>
+</div></div>
+
+<div class="modal" id="manualModal"><div class="modal-box">
+<h2>Enter a lead manually</h2>
+<p>Only the business name is required. Leave anything else blank and it will just show as not filled in on the Leads page.</p>
+<div class="form-card">
+<label>Business name *</label><input id="mnName" placeholder="Business name">
+<label>Industry / niche</label><input id="mnIndustry" placeholder="e.g. Private hospital">
+<label>City</label><input id="mnCity" placeholder="e.g. Accra">
+<label>Website condition</label><input id="mnWebsite" placeholder="e.g. No website, or the site address">
+<label>Social presence</label><input id="mnSocial" placeholder="e.g. Instagram 5K followers">
+<label>Phone</label><input id="mnPhone" placeholder="e.g. 024 000 0000">
+<label>Email</label><input id="mnEmail" placeholder="e.g. info@business.com">
+<label>Problem spotted</label><textarea id="mnProblem" placeholder="What is wrong with their current website, or what they are missing"></textarea>
+<label>What you'll build</label><textarea id="mnSolution" placeholder="The website you would build for them"></textarea>
+<label>Score (0–10, optional)</label><input id="mnScore" type="number" min="0" max="10" step="0.1" placeholder="e.g. 8.5">
+<label>Best contact</label><input id="mnContact" placeholder="e.g. WhatsApp 024 000 0000">
+<div id="mnErr" style="color:#e88a8a; font-size:13px; margin-top:10px"></div>
+<div style="margin-top:14px; display:flex; gap:10px; justify-content:flex-end">
+<button class="btn-ghost" onclick="closeManual()">Cancel</button>
+<button class="btn-save" style="margin-top:0" onclick="addLeadManual()">Save lead</button>
+</div>
+</div>
+</div></div>
+
+<script>
+/* ---- Login gate (front-door lock only: the leads are inside this file, so this
+   hides the page from casual visitors — it is NOT the same protection as the
+   app tracker, whose login is enforced on the server. Use a DIFFERENT password
+   here from the app tracker.) ---- */
+var LOGIN_EMAIL = 'ham76062@gmail.com';
+var LOGIN_HASH = 6956227740995124;
+function cyrb53(str, seed){
+  seed = seed || 0;
+  var h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  for (var i = 0, ch; i < str.length; i++) {
+    ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+}
+function hashPass(pass, email){
+  var h = cyrb53(pass + '|' + email);
+  for (var i = 0; i < 20000; i++) { h = cyrb53(h.toString() + '|' + pass); }
+  return h;
+}
+function showApp(){ document.getElementById('loginScreen').style.display = 'none'; }
+function doLogin(){
+  var email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  var pass = document.getElementById('loginPass').value;
+  var err = document.getElementById('loginErr');
+  if (email !== LOGIN_EMAIL || hashPass(pass, LOGIN_EMAIL) !== LOGIN_HASH) {
+    err.textContent = 'Wrong email or password. Try again.';
+    return;
+  }
+  try { sessionStorage.setItem('ghTrackerAuth', '1'); } catch(e){}
+  err.textContent = '';
+  showApp();
+}
+function doLogout(){
+  try { sessionStorage.removeItem('ghTrackerAuth'); } catch(e){}
+  location.reload();
+}
+try { if (sessionStorage.getItem('ghTrackerAuth') === '1') showApp(); } catch(e){}
+
+var SEED = [{"id": 67, "rank": 1, "name": "Bra Bello Architectural and 3D Designs (Bello Homes Productions)", "industry": "Construction & engineering", "city": "Accra (office Ashongman Estates; sites also Takoradi)", "website": "No website found — all enquiries handled in Facebook comments/WhatsApp", "social": "Facebook page 120K followers; posts Feb 2025–Oct 2026, up to 5.6K likes / 450 comments, mostly prospects asking prices", "phone": "0246953376 (phone/WhatsApp)", "email": "", "problem": "Huge proven demand (120K followers, hundreds of price enquiries) with nowhere to send buyers: no portfolio page, no price/plan catalogue, no quote form — every lead is a manual WhatsApp chat ⚠ FLAG: its CGI renders sometimes include luxury cars as staging and commenters debate its GHS 1.2–1.3M build estimates — marketing renders, not a scam signal.", "solution": "Portfolio site with 3D-design gallery, plan catalogue with prices, quote/budget calculator, WhatsApp click-to-chat", "score": 9.5, "contact": "WhatsApp 0246953376", "status": "new"}, {"id": 11, "rank": 2, "name": "Peekay Construction and Art Works Ltd", "industry": "Construction & interior finishing", "city": "Ejisu-Kumasi", "website": "No website (Facebook/Instagram only)", "social": "Facebook 620 followers, posts Oct–Nov 2026", "phone": "0542130868", "email": "peekayconstruction214@gmail.com", "problem": "Registered Ltd doing good finished work (POP ceilings, furniture, painting) but all sales run through scattered social carousels, no portfolio, prices or quote flow", "solution": "Portfolio-led site with photo galleries, services list, \"Request a quote\" form + WhatsApp", "score": 9.3, "contact": "WhatsApp / call 0542130868", "status": "new"}, {"id": 30, "rank": 3, "name": "St John's Hospital & Fertility Centre", "industry": "Private hospital / beauty centre", "city": "Accra (Tantra Hill)", "website": "Dead — both listed domains fail: stjohnshospitalgh.com HTTP 404; stjohnsgh.com does not resolve", "social": "Instagram @stjohnshospiandfert 12K followers, posts 1 Sep, 13 Oct, 2 Nov 2026", "phone": "050 125 8518 / 050 782 1000", "email": "stjohnsghana@gmail.com", "problem": "12K-follower hospital with IVF, 24-hour ambulance, gynae, paediatrics, dental, ENT, physio has no website — patients must DM or call to learn services, doctors or prices", "solution": "Full hospital site: services & fertility/IVF pages, doctor profiles, price/consultation guide, online booking + WhatsApp, ambulance page, SEO for \"fertility hospital Accra\"", "score": 9.3, "contact": "WhatsApp/call 050 125 8518", "status": "new"}, {"id": 102, "rank": 4, "name": "emPLE Life Insurance Ghana Ltd (formerly Metropolitan Life Insurance Ghana)", "industry": "Insurance", "city": "Accra (North Ridge)", "website": "Broken — emple.com.gh returns HTTP 500 (confirmed twice 22 Nov); emplegh.com does not resolve", "social": "Facebook @emplegh 22K followers (verified); posts Jul–Sep 2026 incl. nationwide Agency Manager recruitment (Accra, Tema, Koforidua, Sunyani, Takoradi, Tamale, Kumasi, Ho, Cape Coast)", "phone": "0302 633933", "email": "info@emplegh.com", "problem": "Large multinational life insurer (funeral, cash plan, school finance, goal plans) actively recruiting and posting, yet its advertised website serves a server error — every campaign click fails ⚠ FLAG: Facebook commenters allege theft/dubious activity at its Ho branch and question its absence from the NIC list (the company replies it transitioned from Metropolitan Life) — verify current NIC licence status before any demo.", "solution": "Rebuild/repair emple.com.gh: product pages, quote/buy flow, agent recruitment portal, claims + branch finder", "score": 9.3, "contact": "Phone 0302 633933", "status": "new"}, {"id": 21, "rank": 5, "name": "Maximo Properties Ghana", "industry": "Real estate", "city": "Accra (Spintex Rd, nr Community 18 Jct)", "website": "No website — none found; GhanaYello lists phones only", "social": "Facebook ~7K, posts through Sep 2026; Instagram @maximopropertyservicesghana 83", "phone": "+233 24 922 4427 / +233 26 624 0390", "email": "", "problem": "19-year agency selling $150K–$2.5M houses/land with zero web presence — listings live only as FB/IG reels; buyers can't browse, filter or book viewings", "solution": "Full listings site: searchable catalogue with prices/photos, WhatsApp viewing-booking, land-title trust section", "score": 9.2, "contact": "Call/WhatsApp 0249224427", "status": "new"}, {"id": 12, "rank": 6, "name": "Mimi's Skincare-N-Spa", "industry": "Beauty centre / spa + skincare products", "city": "Ablekuma–Oduman Junction, Accra", "website": "No website, ordering only via Instagram/Facebook/WhatsApp", "social": "Instagram 200K followers, posts May–Jul 2026", "phone": "0555136438", "email": "", "problem": "200K-follower business with a full price list sells entirely through Instagram flyers and manual WhatsApp/MoMo steps, no searchable service/price pages, no booking, no shop", "solution": "Beauty-centre site + online shop with services & prices, WhatsApp booking, product catalogue, delivery info, map", "score": 9.1, "contact": "WhatsApp 0555136438", "status": "new"}, {"id": 39, "rank": 7, "name": "Atlantic Quarry Products", "industry": "Mining", "city": "Kumasi (Atonsu)", "website": "No website found — trades entirely on Facebook/Instagram", "social": "Facebook 1.3K, very active: posts 18 Sep 2025, 28 Jan 2026, 2 Oct 2026, 2 Nov 2026; Instagram @atlantic_quarry_products 100 (Apr 2026)", "phone": "0557566117 / 0242907583 / 0538101627 / 0597732459", "email": "", "problem": "Real, visible demand handled in Facebook comments — customers repeatedly ask prices per load/town (Goaso, Techiman, Obuasi, Sefwi) and get manual replies; no price list, no order form, no delivery-area page, so every sale costs a phone call ⚠ FLAG: a small delivery outfit, not a quarry operator itself — pitch an ordering/price-list site.", "solution": "Simple ordering site: price list by product & town, delivery-area map, WhatsApp order form, photo proof of loads", "score": 9.1, "contact": "Phone/WhatsApp 0557566117 (or Facebook page message)", "status": "new"}, {"id": 58, "rank": 8, "name": "Biriwa Beach Hotel", "industry": "Hotel / hospitality", "city": "Biriwa (Accra–Cape Coast Rd, Central)", "website": "No working site — listed \"website\" africannaturetours.com failed to resolve when opened 22 Nov; old German site hotelbiriwabeach.de is a stale brochure page. Bookings by phone only", "social": "No own Facebook/Instagram found; recent third-party activity only", "phone": "+233 24 444 6277; 03321-33333 / 33666", "email": "", "problem": "2-star beach hotel with pool, restaurant/bar and group-sized rooms (from GHC 800/night) has no bookable web presence at all — guests must phone, and its listed web address is dead", "solution": "Full resort site: rooms + rates, pool/beach gallery, group/event packages, online booking, WhatsApp", "score": 9.1, "contact": "Phone/WhatsApp +233 24 444 6277", "status": "new"}, {"id": 68, "rank": 9, "name": "Sidan Associates & Partners Ltd (SIDAN)", "industry": "Construction & engineering", "city": "Ogbojo, Accra", "website": "Broken — sidanassociates.com opens to a blank \"Sidan Page Loading\" shell only (crawled Jan 2026); effectively no usable site", "social": "Instagram @sidanassociates_partners 3.4K, Facebook 62; video posts 2 Sep, 14 Sep, 24 Oct 2026", "phone": "0504112415", "email": "hr@sidanassociates.com", "problem": "Paying for a domain that loads nothing, while actively hiring (3 open roles on Jobberman, crawled 21 Nov 2026) and posting site work — clients and recruits find a dead page", "solution": "Full design-to-construction site: services, project portfolio, team, careers page, quote form", "score": 9.1, "contact": "Phone 0504112415 / email hr@sidanassociates.com", "status": "new"}, {"id": 1, "rank": 10, "name": "Sycamore Medical Centre", "industry": "Private hospital", "city": "Takoradi", "website": "Loads but broken — content dated Feb 2021; every department link goes to a dead staging domain; no email shown", "social": "No official page; in GNPC Foundation's Oct 2026 Pinktober post", "phone": "+233 505 787 905", "email": "", "problem": "Ghana's #3 hospital runs a 5-year-old theme demo; patients clicking any department leave for a dead staging domain", "solution": "Full rebuild: services, doctors, WhatsApp booking, accreditation, testimonials", "score": 9, "contact": "WhatsApp / call +233 505 787 905", "status": "new"}, {"id": 2, "rank": 11, "name": "Al-Kawthar Islamic Hospital", "industry": "Private hospital", "city": "Tamale", "website": "None — only the parent foundation's site", "social": "Facebook flyers shared Oct 2026; no official page", "phone": "0244 158 915 / 0553 602 241", "email": "alkawtharhospital@gmail.com", "problem": "Brand-new hospital (opened May 2026) with zero web presence; patients only find it via shared flyers", "solution": "Full new site: services, 24h care, doctors, WhatsApp booking, map, mission", "score": 9, "contact": "WhatsApp 0244 158 915 or alkawtharhospital@gmail.com", "status": "new"}, {"id": 3, "rank": 12, "name": "Tasty's Grill and Bar", "industry": "Restaurant", "city": "Accra (East Legon)", "website": "None — directories list only its Facebook page", "social": "Facebook 2.3K, posted 19 Nov 2026; Instagram 9.7K", "phone": "0243 021 545", "email": "", "problem": "Busy restaurant (175 reviews, 4.3/5) runs everything off social — no menu, prices, ordering or booking", "solution": "Menu site: prices, promos, WhatsApp order / reservation, gallery, map", "score": 9, "contact": "WhatsApp / call 0243 021 545", "status": "new"}, {"id": 4, "rank": 13, "name": "Olivans Fitness Club & Laundry", "industry": "Gym / fitness", "city": "Accra (Haatso)", "website": "Dead — olivansftclgh.com does not load (DNS failure, 21 Nov)", "social": "Instagram 13K, posted 20 Nov 2026", "phone": "0591 476 463; 0303 976 410", "email": "", "problem": "10-year-old gym (238 reviews, 4.5/5) takes enquiries via IG DMs; no plans, prices or timetable online", "solution": "Plans & prices, class timetable, trainers, WhatsApp join, reviews", "score": 9, "contact": "WhatsApp 0591 476 463 or Instagram DM @olivansfitnesscentre", "status": "new"}, {"id": 5, "rank": 14, "name": "Glam Treat Spa", "industry": "Beauty salon / spa", "city": "Accra (Awoshie)", "website": "None — lives on a Fresha booking page only", "social": "Instagram 2K, posted 5 Sep 2026", "phone": "+233 26 645 9719", "email": "", "problem": "Highly rated spa (4.9/5, 121 Fresha reviews); Fresha owns the customer relationship", "solution": "Services + prices, packages, gallery, reviews, WhatsApp booking", "score": 9, "contact": "WhatsApp / call +233 26 645 9719", "status": "new"}, {"id": 13, "rank": 15, "name": "Kinapharma Ltd", "industry": "Pharmaceutical manufacturing & distribution", "city": "Accra (North Industrial Area)", "website": "No working website — kinapharma.com does not resolve (verified live 22 Nov 2026)", "social": "Threads @kinapharmaltd_mkt, posted 6 Nov 2026", "phone": "+233 302 220 390 / +233 302 665 119", "email": "info@kinapharma.com", "problem": "Ghana's biggest indigenous pharma brand (150+ products) has effectively no web presence, no catalogue, no distributor route, no ordering", "solution": "Corporate + product site with 150-product catalogue, \"become a distributor\" form, pharmacy stockist finder, WhatsApp ordering", "score": 9, "contact": "Phone +233 302 220 390 or email info@kinapharma.com", "status": "new"}, {"id": 14, "rank": 16, "name": "AfroMaritime Logistics", "industry": "China–Ghana freight forwarding & sourcing", "city": "Accra (North Industrial Area, opp. TV Africa)", "website": "No website, all selling on Facebook/Instagram", "social": "Facebook 14K followers, reel 17 Mar 2026", "phone": "0534 609 994 / 0534 636 511", "email": "", "problem": "High-demand importer service ($235/CBM, weekly shipments) with no site, rates and transit times buried in social captions, every quote needs a call. ⚠ FLAG: Dec 2025 Facebook comments include users calling the company a scam alongside defenders — verify legitimacy before building anything for this one", "solution": "Quote/tracking site with per-CBM rate calculator, transit-time pages, shipment tracking, WhatsApp enquiry", "score": 9, "contact": "WhatsApp / call 0534 609 994", "status": "new"}, {"id": 49, "rank": 17, "name": "BAK Green Energy Consult (aka BAK Energy / BakGreen)", "industry": "Solar & renewable energy", "city": "Sunyani (HQ, 1st Floor Ecobank Building) + Spintex, Accra", "website": "Dead — listed site www.bakenergy.org fails to connect (curl 000, http and https, 22 Nov 2026)", "social": "Facebook 5.2K; posts 12 Mar, 14 Jun, 10 Sep, 23 Sep, 5 Oct 2025 (install videos, 1.9K–4K likes, 130 comments on Jun post — customers repeatedly asking for prices/packages)", "phone": "054 463 8312 / 020 782 5799 (also 054 183 3560 on listing)", "email": "", "problem": "Strong demand with nowhere to buy: 5.2K followers ask for package prices in comments and are told to WhatsApp for a catalogue; no prices, packages or quote form anywhere online; 12-month payment plans and hotel/farm solar offers exist only in video captions", "solution": "Full site: priced packages (home / hotel / farm solar pumping), quote/WhatsApp form, install gallery, payment-plan page", "score": 8.9, "contact": "WhatsApp/call 054 463 8312", "status": "new"}, {"id": 15, "rank": 18, "name": "SunVolt Energy Solutions Ltd", "industry": "Solar installation (residential, commercial, industrial)", "city": "Tema / Accra", "website": "No website — Google Business profile lists none", "social": "Instagram @sunvolts_, Google 4.9 stars (10 reviews)", "phone": "+233 55 076 0106", "email": "", "problem": "A 4.9-star actively-reviewed installer with no website, no packages/prices, no quote form, no project gallery. ⚠ FLAG: same phone/address also appears under \"Sova Solar Energy Ltd\" — confirm the trading name on first contact", "solution": "Full site with packages and indicative prices, \"Get a free quote\" form, WhatsApp button, project gallery", "score": 8.8, "contact": "Phone / WhatsApp 055 076 0106", "status": "new"}, {"id": 16, "rank": 19, "name": "Gokals-Laborex Ltd", "industry": "Pharma wholesale & distribution", "city": "Accra (Adabraka)", "website": "Dead website — gokals-laborex.com does not resolve (verified live 22 Nov 2026)", "social": "Social presence not reported — verify before contact", "phone": "+233 302 230 800", "email": "sales@gokals-laborex.com", "problem": "Wholesale pharma distributor with a dead website, no online catalogue or ordering route", "solution": "Catalogue + distributor/ordering site with WhatsApp", "score": 8.8, "contact": "Email sales@gokals-laborex.com, then +233 302 230 800", "status": "new"}, {"id": 22, "rank": 20, "name": "Magijan Havens (Magijan Havens Estates)", "industry": "Real estate", "city": "Kumasi (Sabin Akrofom/Nkoranza, off Obuasi Rd)", "website": "No website — no site in any directory or search; only listings + TikTok", "social": "TikTok @magijan.havens.est active; FindGlocal posts Mar 2026; Facebook page exists", "phone": "0592082453 / 0322498557 / 0509900050", "email": "", "problem": "80-home gated community (3/4/5-bed, clubhouse, pool, 24hr security, instalment + mortgage plans) marketed only via TikTok/directory posts — no home types, prices or payment plans anywhere ⚠ FLAG: its domain magijanhavens.com is hijacked by a Chinese sports-betting site.", "solution": "Estate showcase site: home-type pages with prices, payment-plan calculator, site-visit booking", "score": 8.8, "contact": "Call/WhatsApp 0592082453", "status": "new"}, {"id": 31, "rank": 21, "name": "Cilalux Beauty Empire", "industry": "Private hospital / beauty centre", "city": "Accra (Sakumono / Lashibi)", "website": "No website — Facebook only; directory lists facebook.com as its website", "social": "Instagram @cilalux_beauty_empire 1.1K, posts 9 Feb–12 Sep 2026", "phone": "+233 531 387 334; WhatsApp 024 059 0127 (on IG posts)", "email": "", "problem": "Med-aesthetics business selling Botox, fillers, PRP, fat-dissolving, IV infusion, body contouring with no website — high-trust, high-price treatments sold only via IG DMs/WhatsApp, no treatment pages, prices, safety/doctor info or booking ⚠ FLAG: WhatsApp 024 059 0127 (from Instagram) differs from the directory phone +233 531 387 334 — confirm which number takes bookings.", "solution": "Booking-led spa/med-aesthetics site: treatment menu with prices, before/after gallery, practitioner credentials, online booking + WhatsApp", "score": 8.8, "contact": "WhatsApp 024 059 0127", "status": "new"}, {"id": 76, "rank": 22, "name": "Liniven Pharmaceutical Ltd", "industry": "Pharmaceuticals", "city": "North Legon, Accra", "website": "Dead — liniven.com did not resolve on browser.open 22 Nov 2026; BusinessGhana lists website blank", "social": "Facebook facebook.com/linivengh (listed on BusinessGhana; post recency not verified)", "phone": "0500230000; also 0302434812 / 0244810000 (directory listings)", "email": "", "problem": "Licensed wholesaler supplying pharmacies/healthcare providers nationwide, yet its only web presence is directory listings and a dead domain — no product list, no B2B ordering route, buyers must phone", "solution": "B2B distributor site: product catalogue by category, trade/wholesale enquiry & order form, delivery areas, FDA/Pharmacy Council credentials", "score": 8.8, "contact": "Phone/WhatsApp 0500230000", "status": "new"}, {"id": 93, "rank": 23, "name": "A2R Freight Logistics Ltd", "industry": "Logistics & freight", "city": "Tema (Comm. 2, Lumumba Drive)", "website": "Dead — listed domain does not resolve: FIATA/GIFF directory lists a2rfreightlogistics.com; browser.open on 22 Nov failed (unresolvable). No working site", "social": "Facebook + Instagram @a2r.freightlogistics, 13–14 followers; posts 17 Aug, 1 Sep, 2 Oct 2026 (real night container-unloading video)", "phone": "+233 24 480 4419", "email": "admin@a2rfreightlogistics.com", "problem": "Growing firm (11–50 staff, GIFF member, live TradeImeX declarant records) whose only web address is dead; all enquiries go to a tiny personal-scale social presence", "solution": "New multi-page site: services, instant quote form, shipment tracking, WhatsApp click-to-chat, Tema/Accra pages", "score": 8.8, "contact": "Phone/WhatsApp 0244804419", "status": "new"}, {"id": 32, "rank": 24, "name": "Doctors in Service (DIS) Clinic", "industry": "Private hospital / beauty centre", "city": "Cape Coast (Abura)", "website": "No working website — listed domain is wrong: doctorsinservice.com opened live 22 Nov 2026 and loads Tri-City Wings, a US chicken-wing restaurant in Massachusetts", "social": "No own Facebook/Instagram found; Google 34 reviews, 4.0★", "phone": "+233 55 860 0700 / +233 20 138 1019", "email": "", "problem": "4-branch group (Cape Coast, Takoradi, Tema, Accra/Kasoa), est. 2011, 51–100 staff, open 24 hours — but its only published website sends patients to an American restaurant ⚠ FLAG: do not quote doctorsinservice.com back to them as their site — it loads an unrelated US restaurant.", "solution": "Multi-branch hospital site: one page per branch, services, doctors, 24-hour/emergency info, online booking, correct domain", "score": 8.7, "contact": "Call 055 860 0700", "status": "new"}, {"id": 33, "rank": 25, "name": "Inkoom Hospital", "industry": "Private hospital / beauty centre", "city": "Accra (Baatsona, Spintex Rd — No. 143 Nungua Link)", "website": "No website — none found anywhere (name + \"website\" search; inkoomhospital.com/.com.gh/.org/.net/.gh all fail; Wikipedia website cell blank; IdealMedHealth lists no website link)", "social": "No official page; founder Dr Ebenezer Inkoom posts on personal Facebook (780 followers) — 17th-anniversary posts 16–17 Aug 2026; Google 2.9★ (8 reviews)", "phone": "054 066 7474 / 030 281 1070; email listed in directories but unverified — confirm by phone", "email": "", "problem": "17-year-old, 24-hour private hospital with ambulances and a well-known Spintex Rd location has zero web presence: no site, no business social page, no online services/booking info; Google rating (2.9) sits unanswered ⚠ FLAG: Google rating is low (2.9, 8 reviews) vs 5.0 on GhanaYello (2 reviews); the hospital appeared on a 2017 Data Protection Commission non-compliance list (old). Directory-listed email is unverified — confirm by phone.", "solution": "Full hospital site: services & departments, doctors, 24-hour/emergency info, online appointment/WhatsApp booking, patient reviews, insurance (NHIS/private) info, location/directions", "score": 8.7, "contact": "Phone/WhatsApp 054 066 7474; ask for Dr Ebenezer Inkoom or administration", "status": "new"}, {"id": 50, "rank": 26, "name": "Sun Harvester 1 (founder \"Self Made Ray\")", "industry": "Solar & renewable energy", "city": "Accra", "website": "No website found — sells only via Instagram/Facebook", "social": "Instagram @selfmade_ray1 220K, Facebook 50K; posts 13 Aug, 16 Aug, 3 Sep, 17 Nov 2026 (8th off-grid project: 12kW, 40kWh batteries, 24 panels; prices stated: backup from GH₵48,000, off-grid from GH₵80,800)", "phone": "024 510 0397 (call/text, shown in every video)", "email": "", "problem": "High-demand installer with 220K followers and published prices but no website: no package pages, no booking/survey form, no project portfolio — all sales funnel through one phone number and DMs ⚠ FLAG: personal-brand business — reach sits on the founder's personal accounts (@selfmade_ray1), not a business page; confirm who decides on the website.", "solution": "Site with the two published systems, survey booking (GH₵800 Accra survey), install portfolio/videos, quote form", "score": 8.7, "contact": "Call/text/WhatsApp 024 510 0397", "status": "new"}, {"id": 94, "rank": 27, "name": "D.M.A. Shipping Gh Ltd", "industry": "Logistics & freight", "city": "Tema Port", "website": "No website found in any search", "social": "Facebook/Instagram carousel 30 Oct 2026 (and 7 Oct 2026) via owner Kofi Opoku's account, 1K followers", "phone": "0244 621 651; 0540 328 310", "email": "", "problem": "No website at all; the business runs off the owner's personal Facebook account, so importers cannot verify it or get a quote/duty estimate online ⚠ FLAG: trades through the owner's personal Facebook account (Kofi Opoku) rather than a company page — verify GIFF/licence status before building.", "solution": "Simple credibility site: services, duty-estimator/quote form, Google Business profile, WhatsApp button", "score": 8.7, "contact": "Phone/WhatsApp 0244621651", "status": "new"}, {"id": 17, "rank": 28, "name": "Kings University College (KUC)", "industry": "Private university", "city": "Accra (Aplaku Hills, Weija/Bortianor)", "website": "Working but badly stale — \"How to Apply\" page still says 2020/21 academic year", "social": "Facebook ~110K followers, \"ADMISSIONS OPEN SEPT. 2026\" post 28 Jun 2026", "phone": "+233 24 861 9853 / +233 24 570 7922", "email": "admissions@kuc.edu.gh", "problem": "Site contradicts its own live marketing, no online application, no programme/fee pages, two competing domains confuse applicants", "solution": "Modern rebuild with current 2026/27 programmes, fees and scholarships, online application + WhatsApp enquiry, one domain", "score": 8.6, "contact": "Phone / WhatsApp 024 861 9853 or admissions@kuc.edu.gh", "status": "new"}, {"id": 34, "rank": 29, "name": "Infinity Eye Centre", "industry": "Private hospital / beauty centre", "city": "Accra (Ashongman Estate / New Ashongman)", "website": "No website found — only a Google Business profile and Facebook page; no domain listed anywhere", "social": "Facebook 1.1K; posts 8 Apr and 15 Jun 2026 (free eye check-up, up to 40% off frames); Google reviews 2 months ago praising Dr Addo", "phone": "054 080 1115 (Google) / 053 132 6723 (Facebook ads)", "email": "", "problem": "Active eye clinic running frame discounts and free screenings has nowhere to send the enquirers its own ads generate — commenters repeatedly ask for the address and phone number; no services, prices, frames catalogue or booking page ⚠ FLAG: two phone numbers in circulation (054 080 1115 on Google vs 053 132 6723 on Facebook) — confirm the current number first.", "solution": "Eye-care site: services (exams, refraction, contact lenses, low vision), frames catalogue, promo/booking page, Google Maps + WhatsApp booking", "score": 8.6, "contact": "Call/WhatsApp 053 132 6723 (number the clinic itself replies with on Facebook) — confirm first, two numbers in circulation", "status": "new"}, {"id": 69, "rank": 30, "name": "A&D Construction Ltd", "industry": "Construction & engineering", "city": "Kumasi", "website": "No website", "social": "Not recorded", "phone": "0541788188", "email": "", "problem": "No website — building contractor invisible online beyond directories", "solution": "Portfolio + quote site: services, project gallery, WhatsApp quote form", "score": 8.6, "contact": "WhatsApp/call 0541788188", "status": "new"}, {"id": 103, "rank": 31, "name": "Safety Insurance Brokers Ltd (SIBL)", "industry": "Insurance", "city": "Accra (exact street address not found)", "website": "No website — no site found anywhere: searches for name + \"website\", BusinessGhana directory, IBAG listing and all social bios show no URL; tried safetyinsurancebrokers.com / .com.gh / .org / .net, safetybrokersgh.com, safetyinsurancebrokersgh.com — all fail to connect (domains resolve to unroutable 198.18.184.x placeholder IPs)", "social": "None found — no Facebook, Instagram or LinkedIn page surfaced in search", "phone": "+233 (0)30 2761944, +233 (0)30 2786603, +233 244 376 965 (CEO Mrs Lena Adu-Kofi, via IBAG)", "email": "", "problem": "A top-4 broker by size (GHS 30m assets, GHS 23m commission income in 2024, NIC data) with zero web presence at all — invisible to anyone searching for a broker online, while rivals EMWA, Horizon, Apex, Visal and Byllwych all have live sites", "solution": "Full broker website: services by line, quote/lead form, claims guidance, team & credentials (first woman licensed broker in Ghana), SEO for \"insurance brokers Ghana\"", "score": 8.6, "contact": "Call CEO Mrs Lena Adu-Kofi on 0244 376 965, or office landline 030 2761944", "status": "new"}, {"id": 6, "rank": 32, "name": "Vault Realty Limited", "industry": "Real estate", "city": "Takoradi", "website": "Dead — vaultrealtygh.com does not resolve (failed twice)", "social": "Facebook 1.2K, reels Sep 2026; Instagram 230", "phone": "054 633 6972", "email": "vaultrealtylimited@gmail.com", "problem": "Operating since 2019 with live listings (land GHS 68,000/plot) but no browsable site — buyers must DM after watching reels", "solution": "Listings with photos/prices, services, WhatsApp site-visit booking, testimonials", "score": 8.5, "contact": "WhatsApp / call 054 633 6972", "status": "new"}, {"id": 23, "rank": 33, "name": "Kings Real Estate Management and Agency", "industry": "Real estate", "city": "Takoradi", "website": "No website — none found", "social": "Facebook ~2K; promo carousel posted 14 Nov 2026", "phone": "0246789479", "email": "", "problem": "Active agency with recent social push but no website — enquiries only via one Facebook post/phone number; no listings catalogue ⚠ FLAG: name collision with a separate Kings Real Estate Ltd in Accra/Sakumono (est. 2016, 0548693281) — confirm identity on first contact.", "solution": "Simple listings + services site with WhatsApp enquiry per property", "score": 8.5, "contact": "Facebook message or call/WhatsApp 0246789479", "status": "new"}, {"id": 35, "rank": 34, "name": "Baiden-Ghartey Memorial Hospital", "industry": "Private hospital / beauty centre", "city": "Cape Coast (Pedu)", "website": "No website — Facebook page only; GhanaYello lists only an m.facebook.com page as its website", "social": "Facebook page only; no recent own posts found", "phone": "033 213 3332 / 020 265 0506", "email": "", "problem": "Operating since 1991, 26–50 staff, open 24 hours, NHIS-accredited, GP/obs & gynae — yet invisible online beyond directories: no services, visiting hours, doctor or insurance page", "solution": "Hospital site: services, maternity/obs & gynae, doctors, NHIS/insurance accepted, directions + call/WhatsApp booking", "score": 8.5, "contact": "Call 020 265 0506 (mobile, also listed as medical director's line)", "status": "new"}, {"id": 36, "rank": 35, "name": "Crystal Beauty Spa", "industry": "Private hospital / beauty centre", "city": "Accra (Osu) & Kumasi (Santasi) — 2 branches", "website": "No website (directory lists Facebook only)", "social": "Not recorded", "phone": "0595995806", "email": "", "problem": "No website — 2-branch beauty/wellness spa invisible online beyond directories/social", "solution": "Spa site: services + prices, booking, gallery, branch pages", "score": 8.5, "contact": "Call/WhatsApp 0595995806", "status": "new"}, {"id": 40, "rank": 36, "name": "Mintech Resources Ltd", "industry": "Mining", "city": "Tarkwa", "website": "Dead — own site gone: mintechresources.net redirects to zafco.ca (parent Zafco International, Canada); no Mintech-branded site exists", "social": "None found", "phone": "+233 24 672 0718", "email": "info@mintechresources.net", "problem": "Busy importer (309 import shipments, Nov 2025–Oct 2026) with a Tarkwa warehouse, but anyone searching \"Mintech Resources Ghana\" lands on a Canadian parent site with no Ghana catalogue, prices or enquiry route", "solution": "Ghana-branded site: searchable product catalogue (belts, pumps, valves, spares), brands represented, Tarkwa warehouse/delivery promise, quote-request form + WhatsApp", "score": 8.5, "contact": "Email info@mintechresources.net, then phone/WhatsApp", "status": "new"}, {"id": 41, "rank": 37, "name": "Gala Bold Beginning Mining Enterprise (N.A. Nketia Group)", "industry": "Mining", "city": "Kumasi", "website": "No website found", "social": "Instagram @n.a.nketia_group_of_comp 720 followers; 3 promo posts 17–19 Aug 2026; Threads 58", "phone": "0209345142 / 0263435718 / 0240529519 (Tel 0322023920 / 0557923508)", "email": "nanaankomah25@yahoo.com", "problem": "Promotes short/long-term excavator hire and imports on Instagram flyers only — no fleet list, no rates, no booking route; all enquiries must go by phone to a Yahoo address ⚠ FLAG: the email is spelled differently across its own flyers — use nanaankomah25@yahoo.com and confirm by phone; flyers carry a \"Dola AI\" watermark.", "solution": "Fleet & hire site: excavator models available, short/long-term rates, booking enquiry form, import service page", "score": 8.5, "contact": "Phone/WhatsApp 0209345142", "status": "new"}, {"id": 59, "rank": 38, "name": "Orange Beach Resort", "industry": "Hotel / hospitality", "city": "Cape Coast (Victoria Rd, by Cape Coast Castle)", "website": "No website — no site in any listing (Google Hotels, TripAdvisor, Momondo, ChopRadar all show phone only); ChopRadar records \"No Instagram or TikTok on file\"", "social": "No own social found; featured in a Cape Coast Fetu Afahye carousel Aug 2025", "phone": "+233 54 194 9219 (owner Evans, WhatsApp); +233 57 660 5250", "email": "", "problem": "3-star beachfront resort a walk from Cape Coast Castle, with pool, restaurant/bar and rooms from GHC 400, takes bookings only by phoning/WhatsApping the owner directly — invisible to search-driven tourists", "solution": "Full resort site: rooms + rates, beach/pool gallery, restaurant menu, Castle-proximity pitch, online booking + WhatsApp", "score": 8.5, "contact": "WhatsApp +233 54 194 9219 (owner Evans)", "status": "new"}, {"id": 60, "rank": 39, "name": "Takoradi Standard Hotel", "industry": "Hotel / hospitality", "city": "Takoradi (No. 5 Axim Rd, Police Reserve, adjacent Takoradi Int. School)", "website": "No website — no own domain found in name + \"website\" searches, no website link on its GhanaTrvl profile (opened live 22 Nov 2026; phones only)", "social": "Instagram @takoradi_standard_hotel 97 followers, own Reel tour posted 2 Feb 2026; no Facebook page found", "phone": "+233 33 219 2499 / +233 31 202 1485 / +233 28 912 0619 / +233 20 820 2111", "email": "", "problem": "Established hotel (18 standard rooms, restaurant \"Dine with Phyl\" inside) taking bookings only via OTAs (Trip.com, Tripadvisor) and phone — no direct-booking site, no room gallery or rates of its own", "solution": "Full booking website: rooms + rates, direct booking/WhatsApp, restaurant page, gallery, Google Maps", "score": 8.5, "contact": "Phone/WhatsApp +233 33 219 2499 (first listed)", "status": "new"}, {"id": 77, "rank": 40, "name": "DARL Pharmaceuticals Ltd", "industry": "Pharmaceuticals", "city": "Madina New Road, Accra", "website": "Dead — darlpharma.com did not resolve on browser.open 22 Nov 2026; listed as www.darlpharma.com in directories", "social": "Not found", "phone": "+233-302-916507 / +233-262175910", "email": "darlpharma@gmail.com", "problem": "Major wholesaler (ASJ supplier guide; Synergy Capital invested) with a dead domain and no social presence — invisible online to pharmacies/hospitals searching for a wholesaler", "solution": "Distributor site: wholesale catalogue, minimum-order / delivery terms, hospital & pharmacy trade accounts, contact/quote form", "score": 8.5, "contact": "Phone +233-302-916507", "status": "new"}, {"id": 95, "rank": 41, "name": "Macintosh Group Logistics", "industry": "Logistics & freight", "city": "Accra (Adenta) / Tema", "website": "No website", "social": "Not recorded", "phone": "0599 399 411", "email": "", "problem": "No website — haulage, cargo & China–Ghana freight invisible online beyond directories ⚠ FLAG: Macintosh Group Logistics is NOT MAC Logistics Ltd (mac.com.gh, working site — a different company).", "solution": "Quote/tracking site: services, quote form, WhatsApp", "score": 8.5, "contact": "WhatsApp/call 0599 399 411", "status": "new"}, {"id": 96, "rank": 42, "name": "Muwal Freight Services Ltd", "industry": "Logistics & freight", "city": "Tema (HQ, Kristal Plaza Comm. 4) + Takoradi", "website": "No website — website field blank in BusinessGhana, GhanaYello and CargoYellowPages listings. (Note: a listed domain muwalfreight.com does not resolve — still a dead-site lead.)", "social": "None found", "phone": "0303 206118 (Tema); 031 202 1092 (Takoradi)", "email": "", "problem": "23-year-old GIFF corporate member in good standing with two offices, yet completely invisible online — zero web presence for importers searching Tema/Takoradi clearers", "solution": "Full site: services, quote request, Tema + Takoradi pages, GIFF credentials, WhatsApp", "score": 8.5, "contact": "Phone 0303206118 (Tema HQ)", "status": "new"}, {"id": 104, "rank": 43, "name": "Bedrock Insurance Company Ltd", "industry": "Insurance", "city": "Accra — Tafawa Balewa Street (per LinkedIn via Accra Street Journal profile)", "website": "Broken / unreachable — both domains the company itself prints on its adverts fail to load: bedrockinsurance.com.gh → 403 (curl and browser fetch, http and https); bedrockinsurancegh.com → 502 Bad Gateway (curl http and https). No working site reachable", "social": "Instagram @bedrockinsurancegh 1.2K followers, posting through Nov 2026; Facebook @bedrockInsuranceGH 380 followers, last post 18 Nov 2026", "phone": "030 296 2350 / 050 162 7648", "email": "info@bedrockinsurance.com.gh", "problem": "Every advert and social post drives customers to a website that errors out (502 on the domain used in Nov 2026 posts, 403 on the other) — clicks from their own marketing hit a dead end ⚠ FLAG: Bedrock is a Groupe Nduom company — its own NIC licence is intact (on the 31 Oct 2026 register) and it is actively trading, but the parent group's GN Bank licence saga gives the brand reputational baggage. Also: the 403 on bedrockinsurance.com.gh may be a bot/WAF block rather than a dead site — open bedrockinsurance.com.gh in a real browser before pitching; if it loads for a human, Bedrock drops to a stale-site rebuild at best. The 502 on bedrockinsurancegh.com (the domain in its Nov 2026 posts) is a genuine server failure.", "solution": "Fix/rebuild on one canonical domain (other as redirect): product pages, online quote/buy, claims portal, contact", "score": 8.5, "contact": "Call 030 296 2350 or email info@bedrockinsurance.com.gh", "status": "new"}, {"id": 19, "rank": 44, "name": "Cheers Real Estate Agency", "industry": "Real estate agency (land sales)", "city": "Takoradi", "website": "No website, no domain anywhere — all selling via Facebook/Instagram/Threads", "social": "Facebook 5.1K followers, listing videos May–Oct 2026", "phone": "0247828087 / 0537952442", "email": "", "problem": "Every plot lives only as a disappearing social video with a phone number, no searchable catalogue, prices, site plans or booking flow", "solution": "Listings site with searchable land catalogue (price, size, location map, site-plan photo per plot) + WhatsApp \"Book a site viewing\" per listing", "score": 8.4, "contact": "WhatsApp / call 0247828087", "status": "new"}, {"id": 24, "rank": 45, "name": "Acklay Properties", "industry": "Real estate", "city": "Takoradi (#33 Brempong Yaw Rd, Effia)", "website": "Dead — acklaypropertiesgh.com listed in directories but failed to resolve when opened live 22 Nov 2026", "social": "No social presence found; GhanaYello 5.0★ (1 review)", "phone": "031 200 3350 / 050 574 6759", "email": "", "problem": "Agency + developer (sales, letting, rentals, house-building, serviced plots, property management) whose advertised domain is dead — anyone clicking it gets nothing", "solution": "Rebuild as full agency/developer site: listings, serviced-plot catalogue, build-services pages", "score": 8.3, "contact": "Call 0505746759 (mobile)", "status": "new"}, {"id": 25, "rank": 46, "name": "Lean Spectrum Properties Ltd", "industry": "Real estate", "city": "Kasoa (Adam Nana Cafe Rd, nr Savior Foundation)", "website": "No website — none found; only BusinessGhana directory + Facebook page", "social": "Facebook page exists (follower count not visible)", "phone": "0249678231", "email": "", "problem": "Full-service firm (land sales, surveying, titling, construction, valuation, property management, land banking) with no web home — services and plots only visible in directory text", "solution": "Services + land-listings site with plot catalogue, prices, WhatsApp enquiry", "score": 8.3, "contact": "Call/WhatsApp 0249678231", "status": "new"}, {"id": 51, "rank": 47, "name": "Heliosolar Solutions Ltd", "industry": "Solar & renewable energy", "city": "Tamale (also Accra)", "website": "No website", "social": "Not recorded", "phone": "0595852076", "email": "", "problem": "No website — solar installer invisible online beyond directories", "solution": "Full site: packages, quote form, WhatsApp, gallery", "score": 8.3, "contact": "WhatsApp/call 0595852076", "status": "new"}, {"id": 26, "rank": 48, "name": "MTS Agency", "industry": "Real estate", "city": "Kumasi", "website": "No website", "social": "Not recorded", "phone": "+233 24 334 3295", "email": "", "problem": "No website — real estate agency invisible online; listings only via phone/directory", "solution": "Listings site with prices/photos and WhatsApp enquiry", "score": 8.2, "contact": "Phone/WhatsApp +233 24 334 3295", "status": "new"}, {"id": 52, "rank": 49, "name": "Elinnet Solar and Installations", "industry": "Solar & renewable energy", "city": "Accra (Adjiringanor; also Weija & Kasoa New Market Rd)", "website": "Dead — listed site www.elinnet.com fails to resolve (curl 000, 22 Nov 2026)", "social": "No Facebook/Instagram found; active seller on Jiji.com.gh in 2026 (solar streetlight GH₵4,800, Huawei 48V 150Ah battery GH₵12,800 — listings refreshed Aug–Nov 2026)", "phone": "027 651 6126 / 056 126 2878 / 054 290 5465", "email": "", "problem": "Sells products piecemeal on Jiji with prices buried in marketplace listings; no install packages, no service pages, no quote form — customers can't see systems or book installs", "solution": "Product catalogue + install packages with prices, quote form, service areas (household/office/school/church)", "score": 8.2, "contact": "Call/WhatsApp 027 651 6126", "status": "new"}, {"id": 61, "rank": 50, "name": "Gariba Lodge", "industry": "Hotel / hospitality", "city": "Tamale (Bolgatanga Rd, Kanvili)", "website": "No website — GhanaWebSolutions directory (updated 6 Sep 2026) states \"No Website Link\"; no site found in any search", "social": "No own social found; third-party mentions only (FB praise post Jan 2026)", "phone": "+233 24 460 6342 (Google); +233 50 166 5312 (GhanaTRVL/APIE)", "email": "garibalodge@yahoo.com", "problem": "Long-standing 2-star lodge, once billed \"best hotel in Northern Ghana\" ($60–80/night), has zero web presence — travellers find only conflicting phone numbers and old Yahoo/Hotmail addresses ⚠ FLAG: phone numbers conflict across sources and one directory review reports a listed number reaching a private individual, not the lodge; a 30 Sep 2026 post advertises shops/offices for rent and photos show peeling paint — confirm it still operates as a hotel before building.", "solution": "Full hotel site: rooms + rates, restaurant, conference, gallery, online booking, one verified WhatsApp number", "score": 8.2, "contact": "Phone +233 24 460 6342 (verify first — see flag)", "status": "new"}, {"id": 62, "rank": 51, "name": "AKB Westhill Hotel (also \"AKB West Hills Hotel\")", "industry": "Hotel / hospitality", "city": "Takoradi — Kanswrodo (Kansawrodo/Aboboja Junction)", "website": "No website — two name + \"website\" searches returned only Facebook/Instagram promo posts, no domain anywhere", "social": "No own Facebook/Instagram account found; heavy third-party coverage: NzemaToday drone + room tours Dec 2025–Jun 2026, creator tour 14 Oct 2026, Valentine's promo 11 Feb 2026, \"WE ARE ALL BOOKED TONIGHT\" 24 May 2026", "phone": "055-4601790 (given by NzemaToday in reply, Jun 2026); also 0241862091 quoted as booking number, Dec 2025", "email": "", "problem": "New, large hotel (multi-building, rooms numbered to at least 088, pool, restaurant, bar, conference room; Deluxe GHS400 / Super Deluxe GHS500, Feb 2026) with evident demand but no website and no own social channel — all discovery runs through other people's posts ⚠ FLAG: name spelling varies (Westhill / West Hills) and two phone numbers are in circulation — 055-4601790 is the more recent (Jun 2026).", "solution": "Full booking website + own Facebook/Instagram setup: rooms + rates, direct booking, events/conference page", "score": 8.2, "contact": "Phone/WhatsApp 055-4601790", "status": "new"}, {"id": 70, "rank": 52, "name": "Gamot Construction Ghana Ltd", "industry": "Construction & engineering", "city": "Suame, Kumasi", "website": "No website", "social": "Not recorded", "phone": "0248544346", "email": "", "problem": "No website — building & civil contractor invisible online ⚠ FLAG: confirm still operating by phone first (no 2025–26 social/news found).", "solution": "Portfolio + quote site: services, project gallery, WhatsApp quote form", "score": 8.2, "contact": "Call 0248544346 — confirm still operating by phone first (no 2025–26 social/news found)", "status": "new"}, {"id": 78, "rank": 53, "name": "Palb Pharmaceuticals Ltd", "industry": "Pharmaceuticals", "city": "Kaneshie (behind Cocoa Clinic), Accra", "website": "No website — BusinessGhana website field blank; old directory mentions www.palb-pharma.net but no live indexed site found 22 Nov 2026", "social": "Not found", "phone": "0302233627; also 0247015215 (FDA list)", "email": "A.BAWUAH@PALB-PHARMA.NET", "problem": "In business since 1991, FDA-registered importer valid to 1-Dec-2026, yet no website at all — trade buyers find only a phone number and a directory stub", "solution": "Distributor site: product range, wholesale ordering, OneTouch/diabetes and other agency brands, delivery info", "score": 8.2, "contact": "Phone 0302233627", "status": "new"}, {"id": 20, "rank": 54, "name": "Abuesi Beach Resort", "industry": "Beach resort / hospitality", "city": "Abuesi, Shama (Takoradi)", "website": "No working own site — domain abuesibeachresort.com now loads a different resort (Lemon Beach Resort, Elmina)", "social": "No own social page, guest posts only", "phone": "+233 50 583 8582 / +233 24 435 9100 / 031 209 1708", "email": "", "problem": "Guests can only find it via Booking.com/Google or phone, and its own domain now advertises a competitor resort. No room list, rates or online/WhatsApp booking", "solution": "New own site on a fresh domain with gallery, room types + rates, WhatsApp booking, events/bar/restaurant pages, Google Maps", "score": 8.1, "contact": "Phone / WhatsApp +233 50 583 8582", "status": "new"}, {"id": 42, "rank": 55, "name": "Justmac Ventures Ghana Ltd", "industry": "Mining", "city": "Sekondi-Takoradi (granite quarry in Sekondi; group HQ Takoradi)", "website": "No standalone website — no Justmac site found in any search. Parent Justmoh's justmoh.com is live (opened live 22 Nov 2026) but has no Justmac page, no quarry products/services, and no quarry contact details — the word \"quarrying\" appears once, inside a Project Management paragraph", "social": "No own page — only a third-party Facebook photo of its gated site entrance, 29 Oct 2026", "phone": "+233 244 839 633 (parent Justmoh Construction, via ZoomInfo; also Accra listing 030 276 7130); no Justmac-specific number or email found", "email": "", "problem": "Part of the award-winning Justmoh Group (Overall Best Construction Company of the Year 2022/23; granite quarry running at 500 t/hour per SDLG), yet the quarry arm has zero web presence of its own — all enquiries must go through the parent construction brand, which does not sell quarry products ⚠ FLAG: kept as a lead because the quarry business itself has no web presence — the parent Justmoh site justmoh.com is live but has no Justmac page, products or quarry contact.", "solution": "Dedicated Justmac quarry site (or a quarry section): aggregate products, bulk pricing, delivery fleet, order enquiries, separate from the parent construction site", "score": 8.1, "contact": "Phone the parent Justmoh number and ask for Justmac Ventures / quarry operations", "status": "new"}, {"id": 7, "rank": 56, "name": "Tania Specialist Hospital", "industry": "Private hospital", "city": "Tamale (N. Kanvilli)", "website": "None found anywhere", "social": "Not found", "phone": "0233 562 146 / 0264 456 214", "email": "", "problem": "Private 24h hospital 0.7 km from Habana, no web presence — found only in directories", "solution": "Full new site: services, doctors, WhatsApp booking, map, emergency info", "score": 8, "contact": "WhatsApp / call 0233 562 146", "status": "new"}, {"id": 8, "rank": 57, "name": "LaRosa Executive Guest House", "industry": "Hotel / guesthouse", "city": "Kumasi (Oduom)", "website": "None — only on OTAs (Expedia, Trip.com, Booking.com)", "social": "Not found", "phone": "+233 24 591 7670; 032 206 3903", "email": "", "problem": "Well-rated guesthouse (Expedia 8.4/10) pays OTA commission on every booking; no direct-booking route", "solution": "Rooms with photos/rates, WhatsApp booking, location near KNUST, reviews", "score": 8, "contact": "Call / WhatsApp 024 591 7670", "status": "new"}, {"id": 9, "rank": 58, "name": "CapitalMed Pharmacy", "industry": "Pharmacy", "city": "Cape Coast", "website": "None — directories list no URL", "social": "Not found", "phone": "+233 50 541 2772", "email": "", "problem": "\"No. 1 wholesale pharmacy in Central Region\" (4.9/5); no catalogue or ordering — phone or walk-in only (21 Kwamina Walker Ave)", "solution": "Services, WhatsApp stock-check / order + delivery, wholesale enquiry", "score": 8, "contact": "WhatsApp / call 050 541 2772", "status": "new"}, {"id": 10, "rank": 59, "name": "Emmanuel Foundation SHS", "industry": "Private school", "city": "Sunyani (Chiraa Estate)", "website": "None — directories list only its Facebook page", "social": "Facebook 3.2K, posted 30 Jul 2026 (admissions open)", "phone": "0243 638 250 / 0249 124 054", "email": "", "problem": "GES-recognised SHS recruiting for 2026/2027; parents only find a Facebook flyer — no admissions, fees or course details", "solution": "Home, About, Courses, Admissions with WhatsApp enquiry, fees, gallery", "score": 8, "contact": "WhatsApp 0243 638 250", "status": "new"}, {"id": 37, "rank": 60, "name": "Meridian Medical Centre", "industry": "Private hospital / beauty centre", "city": "Tema (Patrice Lumumba Drive, Community 1)", "website": "No proper website — free Google business.site only (meridian-medical-services-limited.business.site) + a Facebook page", "social": "Facebook page listed; no own recent posts; third-party proof: GIMPA Mother's Day fertility-screening outreach post, 6 May 2026", "phone": "030 290 4658", "email": "", "problem": "30+ years in Tema, 9th annual child-health screening (200+ children) — yet only a bare Google business.site stands in for a website: no services, screening programmes, doctors or booking ⚠ FLAG: a working site meridianhospitalgh.com exists but nothing links it to this Tema clinic — confirm with the clinic first.", "solution": "Clinic site: services, child-health & fertility screening programmes, doctors, community outreach pages, booking + WhatsApp", "score": 8, "contact": "Call 030 290 4658", "status": "new"}, {"id": 43, "rank": 61, "name": "Aganaa Mining and Construction Services Ltd", "industry": "Mining", "city": "Kumasi–Pakyi No. 1 (AG-1440-7786)", "website": "No website found", "social": "Facebook page, 5 followers; 4 promo videos posted 1 Nov 2026", "phone": "+233 20 971 1176 / +233 591137006", "email": "aganaaminingservices@gmail.com", "problem": "New, active advertiser (Nov 2026) with a detailed fleet list (Excavator 349D/345B, Dozer D8R/D9R, ADT 740/745, Grader 16G, bowsers, rollers) that exists only inside Facebook video flyers — invisible to Google, no quote route", "solution": "Fleet site: equipment catalogue with specs, hire rates/terms, quote-request form, safety credentials", "score": 8, "contact": "Phone/WhatsApp +233 20 971 1176", "status": "new"}, {"id": 53, "rank": 62, "name": "Brighten Ghana Consult", "industry": "Solar & renewable energy", "city": "Accra (Dzorwulu, N1; also Oyarifa)", "website": "Dead — www.brightenghana.com fails to connect (curl 000 / timeout, 22 Nov 2026)", "social": "None found", "phone": "056 146 6072 / 020 827 7382", "email": "", "problem": "14-year solar consultancy (design/advisory for rooftop & ground-mounted PV) with zero web presence — credibility and project portfolio invisible to the commercial clients it targets", "solution": "Credibility site: services, project portfolio, team/expertise, enquiry form", "score": 8, "contact": "Call 056 146 6072", "status": "new"}, {"id": 63, "rank": 63, "name": "Animens Hotel", "industry": "Hotel / hospitality", "city": "Takoradi", "website": "No website", "social": "Not recorded", "phone": "0543 979 000", "email": "", "problem": "Hotel (40 rooms, 3-star) with no website — bookings only by phone/OTA ⚠ FLAG: the founder appears to have died Oct 2026 — call first and confirm who now runs it.", "solution": "Booking site: rooms + rates, gallery, WhatsApp booking", "score": 8, "contact": "Phone/WhatsApp 0543 979 000 — call first: founder appears to have died Oct 2026; confirm who now runs it", "status": "new"}, {"id": 79, "rank": 64, "name": "Nissi Pharma Ltd", "industry": "Pharmaceuticals", "city": "Accra Central (Okaishie Drug Lane)", "website": "No website — no website in any directory/search result 22 Nov 2026", "social": "Not found", "phone": "0547957137 (listed as WhatsApp)", "email": "", "problem": "Registered importer/distributor in Accra's main drug-trading lane, trading entirely by phone/WhatsApp — no catalogue, prices or ordering page for retail pharmacies", "solution": "Wholesale site: import/distribution catalogue, WhatsApp ordering, Okaishie location & hours", "score": 8, "contact": "WhatsApp/call 0547957137", "status": "new"}, {"id": 80, "rank": 65, "name": "Delma Pharma Ltd", "industry": "Pharmaceuticals", "city": "Accra (East Legon / Laterbiokoshie — see note)", "website": "No website — delmapharma.com, delmapharma.com.gh and delma-pharma.com all fail to resolve/load (curl 000, 22 Nov 2026); no site in any search, no FB/IG bio link", "social": "None found", "phone": "0289550500 (also 0249728726, both from FDA list)", "email": "delma.pharm@gmail.com", "problem": "Active manufacturer/importer with zero web presence: buyers, hospitals and distributors can only find it via FDA lists and trade-data sites; no product catalogue, no distributor enquiry route, no way to showcase registered products (e.g. Verket/esketamine injection, Kalcibest tablets) ⚠ FLAG: address discrepancy (FDA 2020: East Legon/Adjiringano; FDA Jan/Feb 2026 storage list: Laterbiokoshie) — may have moved or hold a second facility. Do NOT confuse with DELDEM Pharma Ltd (Weija), suspended by NHIA on 14 May 2026 for suspected claims fraud — a different, similarly named company. The email delma.pharm@gmail.com could not be verified — treat as unconfirmed.", "solution": "B2B site: product catalogue with FDA registration details, distributor/hospital enquiry form, import & supply capability page, contact/WhatsApp", "score": 8, "contact": "Phone/WhatsApp 0289550500", "status": "new"}, {"id": 84, "rank": 66, "name": "Akim State College (Akim State University College)", "industry": "Private university", "city": "Akim Oda", "website": "Dead — official asuc.edu.gh returns 403 / DNS fail (22 Nov); only a developer subdomain asuc.destechghana.com loads, with garbled title", "social": "Facebook page, post 2026-11-08 (campus signage); follower count not found", "phone": "+233-543 776 216", "email": "", "problem": "Official domain dead; applicants land on a dev subdomain; no working portal", "solution": "New official site + online application portal, programme pages (4 GTEC programmes)", "score": 8, "contact": "Call 0543 776 216", "status": "new"}, {"id": 105, "rank": 67, "name": "Esich Life Assurance Co. Ltd", "industry": "Insurance", "city": "Accra (North Ridge)", "website": "Dead — esichlife.com does not resolve (curl 000, re-checked 22 Nov)", "social": "None found (no FB/IG/LinkedIn page surfaced)", "phone": "0302 201980 / 0302 201981", "email": "info@esichlife.com", "problem": "NIC-licensed life insurer (education, funeral, investment, employee-benefit, credit-life products) with Kumasi + Takoradi branches, yet its only web presence is directory listings — no way to see products, get a quote or start a claim online", "solution": "Modern insurer site: product pages, quote/apply flow, claims guide + branch directory", "score": 8, "contact": "Phone 0302 201980", "status": "new"}, {"id": 106, "rank": 68, "name": "RegencyNem Insurance Ghana Ltd", "industry": "Insurance", "city": "Accra (Airport Residential)", "website": "Dead — regencynem.com does not resolve (curl 000, re-checked 22 Nov)", "social": "None found", "phone": "0302 778106 / 0574 064775", "email": "info@regencynem.com", "problem": "Merger insurer (Regency Alliance + Nem, Sep 2016) with HQ + Takoradi/Akim Oda offices and a May 2026 profile piece — yet zero web presence; customers can only reach it by phone ⚠ FLAG: one public review on africabz.com calls it a \"Complete SCAM\" (agent allegedly took money, no policy printed) and notes it shares address/phone with Heritage Energy Insurance — a single unverified review, but verify NIC good standing and legitimacy before any demo.", "solution": "Corporate insurer site: motor/fire/marine/liability products, quote request, claims + branch pages", "score": 8, "contact": "Phone 0302 778106", "status": "new"}, {"id": 44, "rank": 69, "name": "Sphinx Minerals Marketing Company Ltd", "industry": "Mining", "city": "Accra (60649 Alema St)", "website": "Broken — sphinxmmc.com returns HTTP 403 (all variants, 22 Nov 2026); no usable site", "social": "None found", "phone": "+233 20 794 7947", "email": "", "problem": "Est. 2010, 6–10 staff, offices/agencies in Accra, Kumasi, Tarkwa, Bolgatanga & Wa, but its only web trace is a 2017 directory listing and a blocked domain — no services, products (gold bars/dust, diamonds) or enquiry channel online ⚠ FLAG: sphinxmmc.com returns HTTP 403 on all variants (checked 22 Nov 2026) — verify legitimacy and current GoldBod/PMMC licensing before pitching, and confirm it is still operating by phone first.", "solution": "Trust-first corporate site: services (appraisal, sourcing, sales), licensing/legitimacy page, product enquiry form, office locations", "score": 7.9, "contact": "Phone +233 20 794 7947 (confirm operating first)", "status": "new"}, {"id": 54, "rank": 70, "name": "NetSolutions Ghana Ltd — solar arm", "industry": "Solar & renewable energy", "city": "Accra (Lashibi, plot #25 C20)", "website": "No dedicated solar site — parent IT site netsolutionsgh.net exists, but the solar business has no website of its own", "social": "Facebook + Instagram @netsolutionsghanaltd; install video 14 Sep 2026 (residential rooftop + SUNNE lithium batteries); very low engagement (3 likes)", "phone": "+233 24 749 3405 / +233 50 677 0700", "email": "", "problem": "New solar line from an established IT firm (IBM partner, 16 import shipments Nov 2024–Oct 2025) marketed only by one social video — no packages, prices or way to request a quote ⚠ FLAG: solar is a new line of an established IT firm — pitch a solar-specific site, not a rebuild of the IT site.", "solution": "Solar-focused site/landing: residential packages, quote form, install gallery, separate from the IT site", "score": 7.9, "contact": "Call/WhatsApp +233 24 749 3405", "status": "new"}, {"id": 97, "rank": 71, "name": "Bestpass Shipping & Logistics (BestPass Ltd)", "industry": "Logistics & freight", "city": "Tema (Comm. 1)", "website": "No website found in any search", "social": "None found", "phone": "0302 249305; 0244 268743; 0541 378281", "email": "", "problem": "No website and no social presence; only directory listings, so new customers have no way to see services or request a quote except by calling", "solution": "Starter site: services, quote form, contact/WhatsApp, Google Business profile", "score": 7.9, "contact": "Phone 0244268743 (mobile)", "status": "new"}, {"id": 38, "rank": 72, "name": "Esidem Hospital", "industry": "Private hospital / beauty centre", "city": "Madina / East Legon, Accra", "website": "Dead placeholder — business.site returns 404", "social": "Not recorded", "phone": "030 252 0345 (two phone sets in circulation — confirm current number)", "email": "", "problem": "Private hospital (maternal & reproductive health) with a dead placeholder site ⚠ FLAG: two phone sets in circulation — confirm the current number first.", "solution": "Full hospital site: services, doctors, booking + WhatsApp", "score": 7.8, "contact": "Phone 030 252 0345 — confirm current number first", "status": "new"}, {"id": 45, "rank": 73, "name": "Maso Quarry Limited", "industry": "Mining", "city": "Nsawam (Nsawam-Adoagyiri, Eastern Region) — Plot 3940, Accra–Kumasi Rd, Okobeyeyie", "website": "No website — none found anywhere: name + \"website\" searches, masoquarry domains, Facebook/Instagram bios all return nothing; only trade data, an AfDB ESIA listing and press mentions exist", "social": "None found", "phone": "024 428 6437", "email": "", "problem": "Operating since 2007, royalty-paying, named aggregate supplier in the AfDB Accra Urban Transport ESIA — yet completely invisible online: no product list, prices, ordering or delivery info; buyers can only find it via a directory listing ⚠ FLAG: management has publicly appealed about encroachers on its land/buffer zone — a site documenting its licensed, royalty-paying status would help.", "solution": "Full quarry site: products/grades (chippings, dust, road base), price & order form, delivery areas, location map, WhatsApp ordering", "score": 7.8, "contact": "Phone/WhatsApp 024 428 6437", "status": "new"}, {"id": 64, "rank": 74, "name": "Comfort Beach Resort", "industry": "Hotel / hospitality", "city": "Biriwa New Market (Central)", "website": "No website — no site in any listing (Google, Waze, Go Africa Online, Dorms.com, Trivago, Momondo)", "social": "None found", "phone": "+233 24 460 7266; +233 20 800 8106", "email": "", "problem": "Small beach resort (garden, pet-friendly, 8.4/10 on Dorms.com, Mar 2026 stay dates) 7.3 km from Fort Amsterdam is bookable only via OTAs/phone — no direct channel of its own", "solution": "Simple resort site: rooms + rates, beach/garden gallery, pet-friendly pitch, direct booking + WhatsApp", "score": 7.8, "contact": "Phone/WhatsApp +233 24 460 7266", "status": "new"}, {"id": 71, "rank": 75, "name": "Talensco Construction Ventures", "industry": "Construction & engineering", "city": "Tema New Town", "website": "No website found", "social": "No company page found; promo flyers posted Oct 24–27 2026 via a personal Facebook account (890 followers)", "phone": "0244580796 / 0207245100 / 0200905504", "email": "", "problem": "Advertising on someone's personal profile with a stock-style flyer — no company page, no portfolio, no way to verify past work or request a quote online", "solution": "Company site + branded Facebook page: services (building, roads, renovations), project photos, quote form", "score": 7.8, "contact": "Phone/WhatsApp 0244580796", "status": "new"}, {"id": 72, "rank": 76, "name": "ODM Construction Ltd Company", "industry": "Construction & engineering", "city": "Kumasi (Bantama, Adwuman)", "website": "No website found — note: odmconstruction.com belongs to an unrelated US remodeler, do not confuse", "social": "Instagram @odm_construction 1.2K; foundation work filmed 28 Aug–10 Sep 2026 posted 9 Oct 2026; cathedral renovation Feb 2025", "phone": "No public phone/email found", "email": "", "problem": "Active builder (church renovation, new foundations) whose only presence is Instagram reels — no contact details anywhere, so new clients can only DM and cannot see services, prices or a quote route ⚠ FLAG: the name collides with an unrelated US firm (odmconstruction.com) — do not confuse them.", "solution": "Portfolio site with project case studies (before/after), services, quote form, contact details", "score": 7.8, "contact": "Instagram DM @odm_construction", "status": "new"}, {"id": 81, "rank": 77, "name": "Danadams Pharmaceuticals Industry Ltd", "industry": "Pharmaceuticals", "city": "Baatsona, Spintex Rd, Accra", "website": "Dead — danadamsgh.com DNS/connection failure on browser.open 22 Nov 2026, despite being listed as its official site everywhere", "social": "Not found", "phone": "0302811672 / 0302811673; mobile 0202041735 (trade listing)", "email": "info@danadamsgh.com", "problem": "Established manufacturer (founded 2005, 20–50 staff, GSA/FDA/NAFDAC certified per trade listings) whose official domain is dead — no product list, certifications or export enquiry route online ⚠ FLAG: Crunchbase lists Operating Status \"Closed\", conflicting with trade listings and its FDA/GSA profile — confirm it is still operating (phone/email first) before building.", "solution": "Manufacturer site: product portfolio by therapeutic area, certifications, distributor/export enquiry form", "score": 7.8, "contact": "Email info@danadamsgh.com, then phone 0302811672", "status": "new"}, {"id": 107, "rank": 78, "name": "Exceed Life Assurance Co. Ltd", "industry": "Insurance", "city": "Accra (Asylum Down)", "website": "Dead — exceedlife.com.gh does not resolve (curl 000)", "social": "None found", "phone": "0302 226990 / 0302 226991", "email": "info@exceedlife.com.gh", "problem": "Wholly Ghanaian life insurer, licensed May 2014, rebranded from A-Plus Life (Aug 2024) — but the rebrand never produced a working website; only a Gmail address (a-pluslife2014@gmail.com) appears on the NIC list ⚠ FLAG: a \"Private Liquidation (2024 report)\" note exists — confirm it is still operating.", "solution": "Rebrand-ready site: products, agent finder, online application + claims tracking", "score": 7.8, "contact": "Phone 0302 226990", "status": "new"}, {"id": 65, "rank": 79, "name": "Crislord Palace Hotel", "industry": "Hotel / hospitality", "city": "Anaji, Takoradi", "website": "No website", "social": "Not recorded", "phone": "+233 59 366 5495", "email": "", "problem": "Hotel (3-star, pool, events) with no website — bookings only by phone/OTA", "solution": "Booking site: rooms + rates, events page, WhatsApp booking", "score": 7.7, "contact": "Phone/WhatsApp +233 59 366 5495", "status": "new"}, {"id": 66, "rank": 80, "name": "Karela Beach Resort", "industry": "Hotel / hospitality", "city": "Beyin (near Nzulezu junction, 2 km from Ghana Gas Plant, Atuabo)", "website": "No website — no own domain in name + \"website\" or Facebook/Instagram searches; only OTA/directory listings (Trip.com, KAYAK, Expedia, Hotels.com, ReadyToTrip)", "social": "No own Facebook/Instagram found; guest-tagged Facebook photos at the resort 13–14 Jun 2026 (pool + beach party) prove it is operating", "phone": "⚠️ Phone as listed is malformed: ReadyToTrip (opened live 22 Nov 2026) shows \"233-024-243310992\" — 12 digits after the country code, not a valid Ghana number; email masked/unretrievable. No clean phone or email found — verify by calling / via OTA before pitching", "email": "", "problem": "36-room, 3-star beachfront resort (250-capacity conference hall, restaurant, pool, boat trips to Nzulezu) with zero web presence of its own — bookable only through OTAs ⚠ FLAG: contact details unreliable — the listed phone is malformed (12 digits after the country code) and the email is masked; verify by calling / via OTA before pitching.", "solution": "Full booking website: rooms, rates, Nzulezu tour packages, conference/events page, direct booking", "score": 7.7, "contact": "OTA message / on-site visit first — do not pitch on the listed phone until it is verified", "status": "new"}, {"id": 108, "rank": 81, "name": "Hedge Risk Consult Ltd (HedgeRisk)", "industry": "Insurance", "city": "Accra", "website": "No website — hedgeriskconsult.com does not resolve (curl 000); no other domain found", "social": "Instagram @hedgeriskconsult 260 followers; posts Jun–Jul 2026 (motor, home, fire/burglary, workmen's comp, health)", "phone": "0302 239169 / 0504 259354", "email": "", "problem": "Active small broker marketing 12 product lines on Instagram, but every post dead-ends at a phone number — no site to capture quotes, explain cover or take enquiries", "solution": "Lead-capture broker site: product pages + quote form wired to WhatsApp, claims-help page", "score": 7.7, "contact": "WhatsApp/phone 0504 259354", "status": "new"}, {"id": 27, "rank": 82, "name": "WealthyPlace Real Estate & Property Solutions", "industry": "Real estate", "city": "Kasoa (Etiwa Quarry Opeikuma / Blue Rose Estate Budumburam)", "website": "No website — none found", "social": "Facebook 66; Instagram @jaywealthy147 350; regular video posts Sep–Nov 2026 (latest 10 Nov 2026)", "phone": "0274440499", "email": "", "problem": "Small active agency posting priced listings (uncompleted storey GH₵455,000; plots GH₵85,000–170,000) only as FB/IG videos — no searchable catalogue, prices buried in video graphics", "solution": "Lightweight listings site with prices, photos, WhatsApp enquiry", "score": 7.6, "contact": "WhatsApp 0274440499", "status": "new"}, {"id": 28, "rank": 83, "name": "DreamFix Realty", "industry": "Real estate", "city": "Adenta, Accra", "website": "No working website (domain unresolvable, zero indexed pages)", "social": "Not recorded", "phone": "+233 24 494 1599", "email": "", "problem": "No working website — agency invisible online beyond directories", "solution": "Listings site with prices/photos and WhatsApp enquiry", "score": 7.6, "contact": "Phone +233 24 494 1599", "status": "new"}, {"id": 46, "rank": 84, "name": "Mansco Stone Quarry Ltd", "industry": "Mining", "city": "Accra (HQ, Adabraka) / quarry at Doboro, Nsawam Rd", "website": "Dead — manscoquarry.com does not resolve (curl 000, http & https, 22 Nov 2026)", "social": "None found", "phone": "+233 30 299 0018 / +233 30 281 5298 / +233 24 405 3552", "email": "", "problem": "47-acre (19.07 ha) quarry, 26 staff, supplying Accra construction, but its website is dead and its directory profile was last updated 15 Apr 2015 — no grades, prices, delivery info or order route anywhere online ⚠ FLAG: no 2025–26 activity found — confirm it is still operating by phone first.", "solution": "Quarry site: aggregate grades & specs, delivery to Accra/Nsawam, quote/order form, site photos", "score": 7.6, "contact": "Phone +233 30 299 0018 (confirm operating first)", "status": "new"}, {"id": 55, "rank": 85, "name": "MST Solar Energy Solution", "industry": "Solar & renewable energy", "city": "Accra", "website": "Dead — www.mstsolarsolution.com fails to resolve (curl 000, 22 Nov 2026)", "social": "Facebook post 24 May 2026 (CEO flyer, install/maintenance/consultation); author page 4.6K followers", "phone": "phones shown on flyer +233 59 123 4567 / +233 24 456 7890 — see flag", "email": "info@mstsolarsolution.com", "problem": "Advertises installation, maintenance and consultation but has no site at all — no packages, prices or contact form; only a flyer ⚠ FLAG: VERIFY PHONES BEFORE CONTACTING — the two numbers on its flyer (+233 59 123 4567, +233 24 456 7890) are suspiciously sequential and look like AI-generated placeholders. Use the email first and confirm a real number before building.", "solution": "Full site: packages, maintenance plans, quote form, project photos", "score": 7.6, "contact": "Email info@mstsolarsolution.com (verify phone first — see flag)", "status": "new"}, {"id": 82, "rank": 86, "name": "Sandpark Pharmaceuticals (Sand Park Pharmaceutical)", "industry": "Pharmaceuticals", "city": "Weija — White Cross, Accra–Winneba Rd, Accra", "website": "Dead — sandparkpharma.com did not resolve on browser.open 22 Nov 2026; listed as www.sandparkpharma.com in BusinessGhana", "social": "Not found", "phone": "03021977125; also 0302853477 (Medpages)", "email": "", "problem": "Wholesaler/retailer positioning on lowest-price generics, plus medicine-counter-assistant training, with a dead domain — no price list, no wholesale terms, no training page", "solution": "Wholesale site: generic/OTC catalogue with trade pricing on enquiry, wholesale terms, training courses page", "score": 7.6, "contact": "Phone 03021977125", "status": "new"}, {"id": 98, "rank": 87, "name": "Anointed Clearing & Forwarding", "industry": "Logistics & freight", "city": "Tema (Comm. 1, Stadium Rd)", "website": "No website — listed as \"none\" on BusinessGhana and WebsitesGH", "social": "None found", "phone": "0243 920082; 0202 407874", "email": "", "problem": "No website or social; only directory listings, despite offering air freight/warehousing/haulage that importers would search for online", "solution": "Simple site: services, phone/WhatsApp, clearance checklist, quote request", "score": 7.6, "contact": "Phone 0243920082", "status": "new"}, {"id": 99, "rank": 88, "name": "CB Logistics & Freight (GH) Ltd", "industry": "Logistics & freight", "city": "Tema", "website": "No website", "social": "Not recorded", "phone": "+233 24 471 6549", "email": "", "problem": "No website — customs clearing & freight forwarding invisible online", "solution": "Quote/tracking site: services, quote form, WhatsApp", "score": 7.6, "contact": "Call/WhatsApp +233 24 471 6549", "status": "new"}, {"id": 73, "rank": 89, "name": "Robzy Construction Ltd", "industry": "Construction & engineering", "city": "Takoradi", "website": "No website found", "social": "Facebook flyer posted 8 Oct 2026 (poster account 18 followers, 1 like)", "phone": "0260516264 / 0535736795", "email": "", "problem": "Licensed, foundation-to-finishing builder invisible online except one low-reach flyer — no portfolio, no reviews page, no quote channel", "solution": "Simple credibility site: services, photo portfolio (fence walls, foundations, finishing), quote/WhatsApp form", "score": 7.5, "contact": "Phone/WhatsApp 0260516264", "status": "new"}, {"id": 85, "rank": 90, "name": "Modal College", "industry": "Private university", "city": "Sogakope (Volta)", "website": "Stale — modalcollege.com loads but \"How to Apply\" still says 2023–2024", "social": "Facebook 1.8K, posts 2026-10-29 & 2026-11-02; Instagram @modalcollege 1.6K, post 2026-11-12", "phone": "+233 552 482 220 / +233 207 686 304", "email": "Registry@modalcollege.com", "problem": "Site 3 years behind live 2026/2027 BSc Nursing recruitment running on social ⚠ FLAG: a GTEC public notice of 8 Jul 2026 lists Modal among institutions with expired institutional accreditation — verify renewal before pitching.", "solution": "Rebuild with current 2026/2027 admissions, online apply (portal exists: apply.modalcollege.com), programme pages", "score": 7.5, "contact": "Call/WhatsApp 0552 482 220", "status": "new"}, {"id": 100, "rank": 91, "name": "Storm Logistics", "industry": "Logistics & freight", "city": "Accra (Achimota, Mile 7 Rd, behind Ecobank)", "website": "Site exists but blocks visitors — stormlogistics.com opened 22 Nov returned a firewall \"Unauthorized Access\" page; customers cannot reach it", "social": "Facebook page Stormlogisticsglobal (last post date not found)", "phone": "0303 956032", "email": "info@stormlogistics.com / support@stormlogistics.com", "problem": "Paying for a domain/hosting that turns every visitor away with a firewall block — effectively no working front door since 2008-established firm ⚠ FLAG: the site's firewall block may be a hosting misconfiguration rather than a dead business (phone/email/directories all live).", "solution": "Rebuild on clean hosting keeping the domain: services, quote/tracking, contact form", "score": 7.5, "contact": "Phone 0303956032", "status": "new"}, {"id": 109, "rank": 92, "name": "Corporate Trust Insurance Brokers Ltd", "industry": "Insurance", "city": "McCarthy Hill, Accra", "website": "No working website (domain does not resolve)", "social": "Not recorded", "phone": "024 019 0243", "email": "", "problem": "No working website — insurance broker invisible online beyond directories", "solution": "Broker site: services, quote-request form, WhatsApp", "score": 7.5, "contact": "Phone 024 019 0243", "status": "new"}, {"id": 110, "rank": 93, "name": "Ghana Life Insurance Company Ltd", "industry": "Insurance", "city": "Accra (+8 branches)", "website": "Effectively dead — \"Under Construction\" placeholder", "social": "Not recorded", "phone": "0302 780543", "email": "", "problem": "Dead placeholder site for a life insurer with 8 branches ⚠ FLAG: does not appear on the NIC register of licensed life insurers (Oct 2026) and carries a \"Statutory Manager (2024 report)\" note — verify NIC status and operating status before any demo.", "solution": "Full insurer site: products, quote/apply, claims, branch finder", "score": 7.5, "contact": "Phone 0302 780543 — ⚠️ does not appear on the NIC register of licensed life insurers (Oct 2026); verify NIC status before any demo", "status": "new"}, {"id": 29, "rank": 94, "name": "Legacy Estates Ghana Ltd", "industry": "Real estate", "city": "Tema (No. 25 SOS, Kakasunanka No. 1, Michel Camp)", "website": "Effectively no website — only a free directory subdomain (legacyestates.getafricaonline.com), profile last updated 22 Jan 2014; no own domain", "social": "None found; 0 reviews on GhanaYello", "phone": "+233 24 461 4099 / +233 24 316 1281", "email": "", "problem": "20+ years' experience claimed (rentals, sales, management, construction, serviced plots) with a 12-year-old directory stub as its only web presence — invisible to modern searchers ⚠ FLAG: no activity since the 2014 directory update — verify it is still operating by phone before building.", "solution": "Full company site: rentals/sales catalogue, management services, enquiry + viewing booking", "score": 7.4, "contact": "Call 0244614099 — verify still operating by phone before building (no activity since 2014 directory update)", "status": "new"}, {"id": 56, "rank": 95, "name": "Solar Man Energies and Consult Ltd (\"Solar Man\")", "industry": "Solar & renewable energy", "city": "Accra (city not stated in posts)", "website": "No website found — Facebook only", "social": "Facebook 47 followers; reels 2 Sep 2026 showing a completed Felicity Solar inverter + battery install", "phone": "+233 240 674 003 (WhatsApp/call, on-screen in every video)", "email": "", "problem": "Real completed install on video, but a 47-follower page and no website — no packages, prices, service area or credibility beyond \"we are a registered company\" ⚠ FLAG: very small (47 followers) — verify it is a real registered company on first contact.", "solution": "Simple site: services, install gallery, WhatsApp quote button, service areas", "score": 7.4, "contact": "WhatsApp +233 240 674 003", "status": "new"}, {"id": 83, "rank": 96, "name": "G.R Pharma Ltd", "industry": "Pharmaceuticals", "city": "Adabraka (Adjabeng Rd), Accra", "website": "No website — BusinessGhana explicitly lists website as \"none\"", "social": "Not found", "phone": "0302665625, 0302667553", "email": "", "problem": "Wholesaler with two public landlines and literally no web presence — no address page, catalogue or ordering channel beyond a directory stub", "solution": "Simple distributor site: wholesale catalogue, order-by-phone/WhatsApp form, Adabraka location & hours", "score": 7.4, "contact": "Phone 0302665625", "status": "new"}, {"id": 86, "rank": 97, "name": "Lakeside University College", "industry": "Private university", "city": "Accra (Ashaley Botwe)", "website": "Working but stale (2024/25 homepage, 2023 news)", "social": "Not recorded", "phone": "+233 542 671474", "email": "", "problem": "Stale site; no current admissions info ⚠ FLAG: GTEC accreditation recorded as expired 30 Jun 2024 — verify before pitching.", "solution": "Rebuild with current programmes, fees, online application", "score": 7.4, "contact": "Phone/WhatsApp +233 542 671474 — ⚠️ GTEC accreditation recorded as expired 30 Jun 2024; verify before pitching", "status": "new"}, {"id": 47, "rank": 98, "name": "Swaako Engineering Services Ltd", "industry": "Mining", "city": "Tarkwa + Accra", "website": "No working website (\"No Website Link\", Tarkwa Mining Directory 2026)", "social": "Not recorded", "phone": "024 4693258", "email": "", "problem": "Mining service support (heavy-duty electrical maintenance) with no working website ⚠ FLAG: confirm it is still operating by phone first (no 2025–26 news/social found).", "solution": "Service site: capabilities, clients, enquiry/quote form", "score": 7.3, "contact": "Phone 024 4693258 — confirm operating by phone first (no 2025–26 news/social found)", "status": "new"}, {"id": 57, "rank": 99, "name": "Beaver Energy Company", "industry": "Solar & renewable energy", "city": "Accra (103, 10th Ave, off Nungua Barrier)", "website": "No working site — GhanaYello lists a website link, but beaverenergy.com is a GoDaddy parked \"for sale\" page ($2,295, opened live 22 Nov 2026)", "social": "None found", "phone": "+233 30 271 6837", "email": "", "problem": "Established (2016) renewable-energy + mechanical-seals firm with no web presence at all — no services, products or enquiry route beyond a directory phone number ⚠ FLAG: thin recent-activity evidence — confirm operating status on first contact.", "solution": "Company site: solar services, products, enquiry/quote form", "score": 7.2, "contact": "Call +233 30 271 6837", "status": "new"}, {"id": 111, "rank": 100, "name": "Cardinal Insurance Brokers Ltd", "industry": "Insurance", "city": "Accra (Dansoman)", "website": "No website found — no domain surfaced in any search; cardinalinsurancebrokers.com.gh does not resolve (curl 000)", "social": "None found", "phone": "0208 207297 (IBAG listing) — no public email found", "email": "", "problem": "NIC-licensed broker in good standing (2020 list) and current IBAG member, but invisible online: no site, no email, no social — new clients can only find it via the IBAG phone list", "solution": "Broker site: services (motor, property, marine, liability), quote-request form, insurer-partner + claims-support pages", "score": 7.2, "contact": "Phone 0208 207297", "status": "new"}, {"id": 74, "rank": 101, "name": "Gscon Engineering Ltd", "industry": "Construction & engineering", "city": "Agbogba, Accra (projects also Tema Comm. 24, Winneba)", "website": "Working but stale/weak template — gsconengineering.com loads (opened live 22 Nov 2026) but is a generic Mobirise template with copied generic text, stock photos mixed with site photos, no quote form, no project detail pages, and a misspelled contact email (info@gsconconstuction.com)", "social": "Facebook 16K, Instagram 3K; site-update videos 11 Sep, 24 Sep, 21/30 Oct, 1 Nov 2026", "phone": "0249771655 / 0279763481", "email": "gsconengineering@gmail.com", "problem": "Strongest social proof in this batch (16K followers, live institutional work incl. GETFund classroom block, dormitory, market) undermined by a template site that looks unfinished and lists a typo'd email — prospects can't get a proper quote or see project details ⚠ FLAG: Gscon and Europe Africa Group share near-identical Mobirise template text (likely the same cheap template builder — weak sites, not fraud).", "solution": "Rebuild as a professional portfolio site: real project pages with budgets/process, client-engagement flow, working quote form, correct contact email", "score": 7.1, "contact": "Phone/WhatsApp 0249771655", "status": "new"}, {"id": 87, "rank": 102, "name": "Nduom School of Business and Technology (NSBT)", "industry": "Private university", "city": "Elmina (Ayensudo)", "website": "Stale — nsbt.edu.gh loads but homepage still 2024/2025 + \"Admissions ongoing for 2025/2026\"; How-to-Apply is a 2021 PDF", "social": "Facebook 90K, posts 2026-09-15 & 2026-11-09", "phone": "050 402 5655 / 059 700 8316 / 054 153 6615", "email": "admissions@nsbt.edu.gh", "problem": "Big audience (90K) sent to a site advertising last year's intake and a 2021 apply PDF", "solution": "Refresh to 2026/2027 admissions, fix apply flow (portal: apply.nsbt.edu.gh), programme + fees pages", "score": 7, "contact": "Call 0504 025 655", "status": "new"}, {"id": 88, "rank": 103, "name": "Mumford Institute of Technology", "industry": "Private university", "city": "Adenta, Accra", "website": "Dead — cited site mit.edu.gh does not resolve (curl 000 + browser fetch fail, 22 Nov); admissions run via Google Form", "social": "No social page found", "phone": "+233 243 068 713", "email": "", "problem": "No working website at all; only a listing + Google Form for admissions ⚠ FLAG: a GTEC public notice of 8 Jul 2026 lists Mumford among institutions with expired institutional accreditation — verify renewal before pitching.", "solution": "New site + online application, programmes (Engineering/Tech/Business/IT, RMU-affiliated)", "score": 7, "contact": "Call 0243 068 713", "status": "new"}, {"id": 89, "rank": 104, "name": "Islamic University College, Ghana", "industry": "Private university", "city": "East Legon, Accra", "website": "Working but outdated (no online application; USSD/paper forms)", "social": "Not recorded", "phone": "020 244 4499", "email": "info@iug.edu.gh", "problem": "Outdated site; no online application", "solution": "Modern rebuild with online application, programmes, fees", "score": 6.7, "contact": "Phone 020 244 4499 or info@iug.edu.gh", "status": "new"}, {"id": 48, "rank": 105, "name": "Ghana Manganese Company Ltd", "industry": "Mining", "city": "Nsuta-Wassa, Tarkwa", "website": "Working but flawed — wrong hero copy, typos, no enquiry form (stale rebuild lead)", "social": "Not recorded", "phone": "+233 (0)312003030", "email": "gmc@ghamang.com.gh", "problem": "Working site is flawed and outdated — no enquiry route", "solution": "Rebuild: corrected copy, product/operations pages, enquiry form", "score": 6.6, "contact": "Email gmc@ghamang.com.gh or +233 (0)312003030", "status": "new"}, {"id": 101, "rank": 106, "name": "ShipFast Cargo & Logistics Ltd", "industry": "Logistics & freight", "city": "Accra (Asylum Down, 5th Crescent)", "website": "Working but stale — shipfast.com.gh loads, but footer reads © 2023, no updates in ~3 years, no tracking or online quote calculator", "social": "Instagram @shipfastcargogh 71 followers; posts 21 Sep + 5 Oct 2026 (Customer Service Week); Facebook Shipfastlogistics", "phone": "0200 180273; 0302 221743", "email": "info@shipfast.com.gh", "problem": "Site is frozen in 2023 and generic; active on Freightnet/Instagram but the website does not convert that demand (no tracking, no instant quote)", "solution": "Refresh/rebuild: tracking portal, instant quote, fresh service content, social proof", "score": 6.6, "contact": "Phone 0200180273 or email info@shipfast.com.gh", "status": "new"}, {"id": 90, "rank": 107, "name": "Laweh Open University College", "industry": "Private university", "city": "Accra (Spintex-Baatsona)", "website": "Dead — laweh.edu.gh does not resolve (curl 000 + browser fetch fail, 22 Nov)", "social": "No social page found", "phone": "+233 547 169 761", "email": "info@laweh.edu.gh", "problem": "Open university with 2026/2027 admissions listed on third-party sites but no working site of its own ⚠ FLAG: contact details are from a 2015 source and unverified — verify the business is reachable before spending build time.", "solution": "New site + online application (iApply was on the dead domain), programme + entrance-exam info", "score": 6.5, "contact": "Call 0547 169 761 (verify first)", "status": "new"}, {"id": 91, "rank": 108, "name": "UCAES — University College of Agriculture & Environmental Studies", "industry": "Private university", "city": "Bunso", "website": "Broken content — ucaes.edu.gh loads but homepage counters all read 0 and it still advertises 2025/2026 admissions", "social": "Facebook 4.5K, posts Oct 2026", "phone": "Phone/", "email": "", "problem": "Homepage looks broken/placeholder; last year's admissions still up ⚠ FLAG: GTEC directed it to suspend all fresh admissions (MyJoyOnline, ~Nov 2025, among 11 institutions) — verify accreditation status before pitching; do not pitch admissions until cleared.", "solution": "Rebuild homepage + current admissions + programme pages", "score": 6, "contact": "Facebook page DM", "status": "new"}, {"id": 75, "rank": 109, "name": "Europe Africa Group", "industry": "Construction & engineering", "city": "Kumasi", "website": "Working but weak/stale template — europeafricagroup.com loads, but generic Mobirise template (same copied text as Gscon's site), \"available via fax\", no portfolio, no quote form; its own flyers print a misspelled URL (europearficagroup.com)", "social": "Facebook 7 followers, Instagram @europe_africagroup 56; posts 18 Sep, 9–10 Oct, 19 Nov 2026", "phone": "0201401749 / 0550536818", "email": "info@europeafricagroup.com", "problem": "Multi-service firm (structural design, civil works, wood supply, boreholes) whose site and flyers both carry errors/typos and show no completed work — looks unpolished despite real activity ⚠ FLAG: Europe Africa Group and Gscon share near-identical Mobirise template text (likely the same cheap template builder — weak sites, not fraud).", "solution": "Rebuild: services + structural portfolio, wood-supply catalogue with prices, quote form, corrected branding/URL on all materials", "score": 5.6, "contact": "Phone/WhatsApp 0201401749", "status": "new"}, {"id": 92, "rank": 110, "name": "Apex University College", "industry": "Private university", "city": "Accra", "website": "No website — none found anywhere; UniversityCompass: \"We don't have this institution's website yet\"", "social": "None found", "phone": "None found", "email": "", "problem": "Invisible online: no site, no phone, no email, no social; 0 accredited programmes listed ⚠ FLAG: no contact details found anywhere — weakest lead; verify in person / via Google Business Profile before spending build time.", "solution": "Full build: site + programme pages + contact/apply flow; needs on-the-ground contact discovery", "score": 5.5, "contact": "No contact found — weakest lead; verify in person / via Google Business Profile", "status": "new"}];
+var KEY = 'ghanaLeadsTrackerV1';
+var state = load();
+var importRows = null, importMap = null;
+var statusFilter = '';
+
+function load(){
+  try { var raw = localStorage.getItem(KEY); if (raw) { var s = JSON.parse(raw); if (s && s.leads && s.leads.length) return s; } } catch(e){}
+  return { leads: JSON.parse(JSON.stringify(SEED)), feedback: [], contracts: [] };
+}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){} }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function normName(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
+function fmtMoney(n){ return Number(n||0).toLocaleString('en-GH'); }
+
+function fillCustomers(){
+  var names = state.leads.map(function(l){return l.name}).sort();
+  ['fbCustomer','fbAddCustomer','ctCustomer'].forEach(function(id){
+    var el = document.getElementById(id);
+    var cur = el.value;
+    var opts = id==='fbCustomer' ? '<option value="">All customers</option>' : '';
+    el.innerHTML = opts + names.map(function(n){ return '<option value="'+esc(n)+'">'+esc(n)+'</option>'; }).join('');
+    if (cur && names.indexOf(cur) !== -1) el.value = cur;
+  });
+}
+
+function showTab(which){
+  document.getElementById('pageLeads').style.display = which==='leads' ? '' : 'none';
+  document.getElementById('pageFb').style.display = which==='fb' ? '' : 'none';
+  document.getElementById('tabLeads').className = which==='leads' ? 'active' : '';
+  document.getElementById('tabFb').className = which==='fb' ? 'active' : '';
+  if (which==='fb') renderFb();
+}
+
+function statusPill(s){
+  var label = {new:'Not contacted', built:'Site built', contacted:'Contacted', booked:'Booked', noreply:'No reply', declined:'Declined'}[s] || s;
+  return '<span class="pill '+s+'">'+label+'</span>';
+}
+function setFilter(f, btn){
+  statusFilter = f;
+  document.querySelectorAll('#pills button').forEach(function(b){ b.className = b === btn ? 'active' : ''; });
+  renderLeads();
+}
+function firstPhoneIntl(phone){
+  var first = (phone || '').split(/[/;]/)[0] || '';
+  var digits = first.replace(/\D/g, '');
+  if (digits.indexOf('233') === 0) return digits;
+  if (digits.charAt(0) === '0') return '233' + digits.slice(1);
+  return digits;
+}
+var MAIN_CITIES = [['accra','Accra'],['tamale','Tamale'],['takoradi','Takoradi'],['sekondi','Takoradi'],['kumasi','Kumasi'],['tema','Tema'],['cape coast','Cape Coast'],['sunyani','Sunyani'],['tarkwa','Tarkwa'],['kasoa','Kasoa'],['elmina','Elmina'],['akim oda','Akim Oda'],['bunso','Bunso'],['sogakope','Sogakope'],['nsawam','Nsawam'],['biriwa','Biriwa'],['beyin','Beyin'],['abuesi','Takoradi'],['shama','Takoradi'],['anaji','Takoradi'],['nsuta','Tarkwa'],['ejisu','Kumasi'],['madina','Accra'],['adenta','Accra'],['agbogba','Accra'],['ogbojo','Accra'],['ablekuma','Accra']];
+function mainCity(city){
+  var low = (city || '').toLowerCase();
+  var best = null, bestPos = 1e9;
+  MAIN_CITIES.forEach(function(pair){ var p = low.indexOf(pair[0]); if (p !== -1 && p < bestPos) { bestPos = p; best = pair[1]; } });
+  if (best) return best;
+  return (city || '').split(',')[0].split(' (')[0].trim();
+}
+function fillDropdowns(){
+  function fill(id, key, allLabel, mapFn){
+    var el = document.getElementById(id);
+    var cur = el.value;
+    var counts = {};
+    state.leads.forEach(function(l){ var v = mapFn ? mapFn(l[key]) : l[key]; counts[v] = (counts[v]||0)+1; });
+    var opts = '<option value="">'+allLabel+'</option>';
+    Object.keys(counts).sort().forEach(function(v){ opts += '<option value="'+esc(v)+'">'+esc(v)+' ('+counts[v]+')</option>'; });
+    el.innerHTML = opts;
+    if (cur && counts[cur]) el.value = cur;
+  }
+  fill('tradeSel', 'industry', 'All niches');
+  fill('citySel', 'city', 'All cities', mainCity);
+}
+function filteredLeads(){
+  var trade = document.getElementById('tradeSel').value;
+  var city = document.getElementById('citySel').value;
+  return state.leads.filter(function(l){
+    if (statusFilter && l.status !== statusFilter) return false;
+    if (trade && l.industry !== trade) return false;
+    if (city && mainCity(l.city) !== city) return false;
+    return true;
+  });
+}
+function renderLeads(){
+  fillDropdowns();
+  var c = {new:0, built:0, contacted:0, booked:0};
+  state.leads.forEach(function(l){ c[l.status] = (c[l.status]||0)+1; });
+  var total = state.leads.length;
+  document.querySelectorAll('.tot').forEach(function(el){ el.textContent = total; });
+  document.getElementById('stResearched').textContent = total;
+  document.getElementById('stBuilt').textContent = c.built||0;
+  document.getElementById('stContacted').textContent = c.contacted||0;
+  document.getElementById('stBooked').textContent = c.booked||0;
+  document.getElementById('pcNew').textContent = c.new||0;
+  document.getElementById('pcBuilt').textContent = c.built||0;
+  document.getElementById('pcContacted').textContent = c.contacted||0;
+  document.getElementById('pcBooked').textContent = c.booked||0;
+  document.getElementById('pcNoreply').textContent = c.noreply||0;
+  document.getElementById('pcDeclined').textContent = c.declined||0;
+  var list = filteredLeads();
+  document.getElementById('count').textContent = list.length + ' of ' + total + ' leads';
+  var html = '';
+  list.forEach(function(l){
+    var intl = firstPhoneIntl(l.phone);
+    var meta = [l.industry, l.city].filter(function(x){ return x; }).join(' · ') || '—';
+    var scoreHtml = (l.score==null || l.score==='') ? 'Score <b>—</b>' : 'Score <b>'+l.score+'/10</b>';
+    html += '<div class="lead-card">'
+      + '<div class="lead-top"><div><span class="lead-rank">'+l.rank+'</span><span class="lead-name" onclick="toggleDetail('+l.id+')">'+esc(l.name)+'</span><div class="lead-meta">'+esc(meta)+'</div></div>'
+      + '<div><div style="text-align:right">'+statusPill(l.status)+'</div><div class="lead-score" style="margin-top:6px">'+scoreHtml+'</div></div></div>'
+      + '<div class="lead-web"><b>Website:</b> '+esc(l.website||'—')+'</div>'
+      + '<div class="lead-btns"><button class="'+(l.status==='built'?'on-built':'')+'" onclick="setStatus('+l.id+',\'built\')">Site built</button><button class="'+(l.status==='contacted'?'on-contacted':'')+'" onclick="setStatus('+l.id+',\'contacted\')">Contacted</button><button class="'+(l.status==='booked'?'on-booked':'')+'" onclick="setStatus('+l.id+',\'booked\')">Booked</button></div>'
+      + '<div class="lead-plain"><span class="plain-opt'+(l.status==='noreply'?' on-noreply':'')+'" onclick="setStatus('+l.id+',\'noreply\')">No reply</span><span class="plain-opt'+(l.status==='declined'?' on-declined':'')+'" onclick="setStatus('+l.id+',\'declined\')">Declined</span></div>'
+      + '<div><span class="lead-detail-toggle" id="tgl'+l.id+'" onclick="toggleDetail('+l.id+')">Problem, solution &amp; contact ▾</span></div>'
+      + '<div class="lead-detail" id="d'+l.id+'" style="display:none">'
+      + '<p><b>Problem spotted:</b> '+esc(l.problem||'—')+'</p>'
+      + "<p><b>What you'll build:</b> "+esc(l.solution||'—')+'</p>'
+      + '<p><b>Social:</b> '+esc(l.social||'—')+'</p>'
+      + '<p><b>Best contact:</b> '+esc(l.contact||'—')+'</p>'
+      + '<p><b>Phone:</b> '+esc(l.phone||'—')+(l.email ? ' · <b>Email:</b> '+esc(l.email) : '')+'</p>'
+      + '<div class="lead-action-btns">'
+      + (intl ? '<a class="btn-wa" target="_blank" rel="noreferrer" href="https://wa.me/'+intl+'">WhatsApp</a>' : '')
+      + (intl ? '<a class="btn-line" href="tel:+'+intl+'">Call</a>' : '')
+      + (l.email ? '<a class="btn-line" href="mailto:'+esc(l.email)+'">Email</a>' : '')
+      + '<a class="btn-line" target="_blank" rel="noreferrer" href="https://www.google.com/maps/search/'+encodeURIComponent(l.name+' '+l.city+' Ghana')+'">Map</a>'
+      + '</div></div>'
+      + '</div>';
+  });
+  document.getElementById('cards').innerHTML = html || '<div class="empty-card">No leads match your search.</div>';
+  fillCustomers();
+}
+function toggleForm(id){ var el=document.getElementById(id); el.style.display = el.style.display==='none' ? '' : 'none'; }
+function toggleDetail(id){ var el=document.getElementById('d'+id); var open = el.style.display==='none'; el.style.display = open ? '' : 'none'; var tg=document.getElementById('tgl'+id); if (tg) tg.textContent = open ? 'Hide details ▴' : 'Problem, solution & contact ▾'; }
+function setStatus(id, st){
+  var l = state.leads.find(function(x){return x.id===id});
+  if (!l) return;
+  if (l.status === st) st = 'new';  // tapping the selected button again unselects it
+  l.status = st;
+  var now = new Date().toISOString().slice(0,10);
+  if (st==='built') l.builtAt = now; else if (st==='contacted') l.contactedAt = now; else if (st==='booked') l.bookedAt = now;
+  if (st==='new') { l.builtAt=null; l.contactedAt=null; l.bookedAt=null; }
+  save(); renderLeads();
+}
+function resetAll(){ if (confirm('Reset everything back to the original 110 leads? Your marks, feedback and contracts on this device will be cleared.')) { localStorage.removeItem(KEY); state = load(); renderLeads(); renderFb(); } }
+
+function downloadCSV(){
+  var list = filteredLeads();
+  function q(v){ return '"'+String(v==null?'':v).replace(/"/g,'""')+'"'; }
+  var lines = [['Rank','Business','Industry','City','Website condition','Social presence','Phone','Email','Problem','Solution','Score','Best contact','Status'].map(q).join(',')];
+  list.forEach(function(l){ lines.push([l.rank,l.name,l.industry,l.city,l.website,l.social,l.phone,l.email,l.problem,l.solution,l.score,l.contact,l.status].map(q).join(',')); });
+  var blob = new Blob([lines.join('\n')], {type:'text/csv'});
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'ghana-website-leads.csv'; a.click();
+}
+
+/* ---- Feedback & contracts ---- */
+var editingFb = -1, editingCt = -1;
+function openFbForm(){ editingFb = -1; document.getElementById('fbSaveBtn').textContent = 'Save feedback'; document.getElementById('fbText').value=''; document.getElementById('fbChanges').value=''; var f=document.getElementById('fbForm'); f.style.display = f.style.display==='none' ? '' : 'none'; }
+function openCtForm(){ editingCt = -1; document.getElementById('ctSaveBtn').textContent = 'Save contract'; ['ctWhat','ctAmount','ctStart','ctRenew','ctWeb','ctDrive','ctNotes'].forEach(function(id){ document.getElementById(id).value=''; }); document.getElementById('ctBilling').value='monthly'; document.getElementById('ctStatus').value='active'; var f=document.getElementById('ctForm'); f.style.display = f.style.display==='none' ? '' : 'none'; }
+function renderFb(){
+  var cust = document.getElementById('fbCustomer').value;
+  var addSel = document.getElementById('fbAddCustomer');
+  if (addSel && cust) addSel.value = cust;
+  var fb = cust ? state.feedback.filter(function(f){ return f.customer===cust; }) : state.feedback;
+  var ct = cust ? state.contracts.filter(function(c){ return c.customer===cust; }) : state.contracts;
+  document.getElementById('stFb').textContent = state.feedback.length;
+  var active = state.contracts.filter(function(c){ return c.status==='active'; });
+  document.getElementById('stContracts').textContent = active.length;
+  document.getElementById('stContractsTotal').textContent = state.contracts.length;
+  var monthly = active.filter(function(c){ return c.billing==='monthly'; }).reduce(function(s,c){ return s + (Number(c.amount)||0); }, 0);
+  document.getElementById('stMonthly').textContent = fmtMoney(monthly);
+  var earnings = state.contracts.reduce(function(s,c){ return s + (Number(c.amount)||0); }, 0);
+  document.getElementById('stEarnings').textContent = fmtMoney(earnings);
+  document.getElementById('fbList').innerHTML = fb.length ? fb.map(function(f){
+    return '<div class="entry"><b>'+esc(f.customer)+'</b><div class="meta">'+esc(f.date)+'</div><div><b>They said:</b> '+esc(f.text)+'</div><div><b>Changes made:</b> '+esc(f.changes||'—')+'</div><button class="btn-ghost" onclick="editFeedback('+state.feedback.indexOf(f)+')">Edit</button> <button class="btn-ghost" onclick="delFeedback('+state.feedback.indexOf(f)+')">Delete</button></div>';
+  }).join('') : '<div class="empty-card">No feedback written yet. When a customer tells you what they think of their site, write it here — and what you changed after.</div>';
+  document.getElementById('ctList').innerHTML = ct.length ? ct.map(function(c){
+    var i = state.contracts.indexOf(c);
+    return '<div class="entry"><b>'+esc(c.customer)+'</b> — '+esc(c.what)+' — <b>GH&cent; '+fmtMoney(c.amount)+'</b> ('+esc(c.billing)+', '+esc(c.status)+')<div class="meta">Start: '+esc(c.start||'—')+' · Renewal: '+esc(c.renew||'—')+'</div><div>'+(c.web?'<a class="linkbtn" target="_blank" href="'+esc(c.web)+'">Website</a>':'')+(c.drive?'<a class="linkbtn" target="_blank" href="'+esc(c.drive)+'">Drive folder</a>':'')+'</div>'+(c.notes?'<div>'+esc(c.notes)+'</div>':'')+'<button class="btn-ghost" onclick="editContract('+i+')">Edit</button> <button class="btn-ghost" onclick="delContract('+i+')">Delete</button></div>';
+  }).join('') : '<div class="empty-card">No contracts yet. When a customer agrees to a site or a monthly care plan, add it here so you always know who owes what, and when it renews.</div>';
+}
+function editFeedback(i){
+  var f = state.feedback[i]; if (!f) return;
+  editingFb = i;
+  document.getElementById('fbAddCustomer').value = f.customer;
+  document.getElementById('fbText').value = f.text;
+  document.getElementById('fbChanges').value = f.changes || '';
+  document.getElementById('fbSaveBtn').textContent = 'Save changes';
+  document.getElementById('fbForm').style.display = '';
+}
+function addFeedback(){
+  var cust = document.getElementById('fbAddCustomer').value;
+  var text = document.getElementById('fbText').value.trim();
+  var changes = document.getElementById('fbChanges').value.trim();
+  if (!cust) { alert('Pick a customer first.'); return; }
+  if (!text) { alert('Write what the customer said first.'); return; }
+  if (editingFb >= 0) {
+    state.feedback[editingFb].customer = cust;
+    state.feedback[editingFb].text = text;
+    state.feedback[editingFb].changes = changes;
+    editingFb = -1;
+    document.getElementById('fbSaveBtn').textContent = 'Save feedback';
+  } else {
+    state.feedback.unshift({customer:cust, text:text, changes:changes, date:new Date().toISOString().slice(0,10)});
+  }
+  document.getElementById('fbText').value=''; document.getElementById('fbChanges').value='';
+  document.getElementById('fbForm').style.display='none';
+  save(); renderFb();
+}
+function delFeedback(i){ if (confirm('Delete this feedback entry?')) { state.feedback.splice(i,1); save(); renderFb(); } }
+function editContract(i){
+  var c = state.contracts[i]; if (!c) return;
+  editingCt = i;
+  document.getElementById('ctCustomer').value = c.customer;
+  document.getElementById('ctWhat').value = c.what;
+  document.getElementById('ctAmount').value = c.amount;
+  document.getElementById('ctBilling').value = c.billing;
+  document.getElementById('ctStatus').value = c.status;
+  document.getElementById('ctStart').value = c.start || '';
+  document.getElementById('ctRenew').value = c.renew || '';
+  document.getElementById('ctWeb').value = c.web || '';
+  document.getElementById('ctDrive').value = c.drive || '';
+  document.getElementById('ctNotes').value = c.notes || '';
+  document.getElementById('ctSaveBtn').textContent = 'Save changes';
+  document.getElementById('ctForm').style.display = '';
+}
+function addContract(){
+  var cust = document.getElementById('ctCustomer').value;
+  var what = document.getElementById('ctWhat').value.trim();
+  var amount = Number(document.getElementById('ctAmount').value || 0);
+  if (!what) { alert('Say what was agreed first.'); return; }
+  var rec = {customer:cust, what:what, amount:amount,
+    billing:document.getElementById('ctBilling').value, status:document.getElementById('ctStatus').value,
+    start:document.getElementById('ctStart').value, renew:document.getElementById('ctRenew').value,
+    web:document.getElementById('ctWeb').value.trim(), drive:document.getElementById('ctDrive').value.trim(),
+    notes:document.getElementById('ctNotes').value.trim()};
+  if (editingCt >= 0) {
+    state.contracts[editingCt] = rec;
+    editingCt = -1;
+    document.getElementById('ctSaveBtn').textContent = 'Save contract';
+  } else {
+    state.contracts.unshift(rec);
+  }
+  // A contract means the client booked — mark their lead as Booked on the Leads page.
+  var lead = state.leads.find(function(x){ return x.name === cust; });
+  if (lead && lead.status !== 'booked') { lead.status = 'booked'; lead.bookedAt = new Date().toISOString().slice(0,10); }
+  ['ctWhat','ctAmount','ctStart','ctRenew','ctWeb','ctDrive','ctNotes'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('ctForm').style.display='none';
+  save(); renderFb(); renderLeads();
+}
+function delContract(i){ if (confirm('Delete this contract?')) { state.contracts.splice(i,1); save(); renderFb(); } }
+
+/* ---- Add a lead: choose CSV import or manual entry ---- */
+function openImportChoice(){ document.getElementById('choiceModal').classList.add('open'); }
+function closeChoice(){ document.getElementById('choiceModal').classList.remove('open'); }
+function openManual(){ ['mnName','mnIndustry','mnCity','mnWebsite','mnSocial','mnPhone','mnEmail','mnProblem','mnSolution','mnScore','mnContact'].forEach(function(id){ document.getElementById(id).value=''; }); document.getElementById('mnErr').textContent=''; document.getElementById('manualModal').classList.add('open'); }
+function closeManual(){ document.getElementById('manualModal').classList.remove('open'); }
+function sortLeads(){
+  state.leads.sort(function(a,b){ return (b.score==null?0:b.score) - (a.score==null?0:a.score); });
+  state.leads.forEach(function(l,i){ l.rank = i+1; });
+}
+function addLeadManual(){
+  var err = document.getElementById('mnErr');
+  var name = document.getElementById('mnName').value.trim();
+  if (!name) { err.textContent = 'Enter the business name first.'; return; }
+  if (state.leads.some(function(l){ return normName(l.name)===normName(name); })) { err.textContent = 'A lead with this name is already in the tracker.'; return; }
+  var email = document.getElementById('mnEmail').value.trim();
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { err.textContent = 'That email doesn\u2019t look right.'; return; }
+  var scoreRaw = document.getElementById('mnScore').value.trim();
+  var score = null;
+  if (scoreRaw !== '') { score = Number(scoreRaw); if (isNaN(score) || score < 0 || score > 10) { err.textContent = 'Score must be between 0 and 10.'; return; } }
+  var maxId = Math.max.apply(null, state.leads.map(function(l){ return l.id; }));
+  state.leads.push({id:maxId+1, rank:0, name:name,
+    industry:document.getElementById('mnIndustry').value.trim(),
+    city:document.getElementById('mnCity').value.trim(),
+    website:document.getElementById('mnWebsite').value.trim(),
+    social:document.getElementById('mnSocial').value.trim(),
+    phone:document.getElementById('mnPhone').value.trim(),
+    email:email,
+    problem:document.getElementById('mnProblem').value.trim(),
+    solution:document.getElementById('mnSolution').value.trim(),
+    score:score,
+    contact:document.getElementById('mnContact').value.trim(),
+    status:'new', builtAt:null, contactedAt:null, bookedAt:null});
+  sortLeads();
+  save(); closeManual(); renderLeads();
+  alert('Lead added as Not contacted.');
+}
+
+/* ---- CSV import ---- */
+var FIELDS = ['name','industry','city','website','social','phone','email','problem','solution','score','contact'];
+var FIELD_LABELS = {name:'Business name', industry:'Industry', city:'City', website:'Website condition', social:'Social presence', phone:'Phone', email:'Email', problem:'Problem spotted', solution:'Recommended solution', score:'Score', contact:'Best contact'};
+function parseCSV(text){
+  var rows=[], row=[], cur='', inQ=false;
+  for (var i=0;i<text.length;i++){
+    var ch=text[i];
+    if (inQ){ if (ch==='"'){ if (text[i+1]==='"'){ cur+='"'; i++; } else inQ=false; } else cur+=ch; }
+    else if (ch==='"') inQ=true;
+    else if (ch===','){ row.push(cur); cur=''; }
+    else if (ch==='\n' || ch==='\r'){ if (ch==='\r' && text[i+1]==='\n') i++; row.push(cur); cur=''; if (row.length>1 || row[0]!=='') rows.push(row); row=[]; }
+    else cur+=ch;
+  }
+  if (cur!=='' || row.length){ row.push(cur); rows.push(row); }
+  return rows.filter(function(r){ return r.some(function(c){ return String(c).trim()!==''; }); });
+}
+function autoMap(header){
+  var map = {};
+  var keys = Object.keys(FIELD_LABELS);
+  header.forEach(function(h, i){
+    var hn = String(h).toLowerCase();
+    var best = '';
+    keys.forEach(function(k){
+      if (hn.indexOf(k) !== -1 || FIELD_LABELS[k].toLowerCase().indexOf(hn) !== -1) best = k;
+    });
+    if (hn.indexOf('business')!==-1 || hn==='name') best='name';
+    if (hn.indexOf('website')!==-1) best='website';
+    if (hn.indexOf('phone')!==-1) best='phone';
+    if (hn.indexOf('email')!==-1 || hn.indexOf('mail')!==-1) best='email';
+    if (hn.indexOf('score')!==-1) best='score';
+    if (hn.indexOf('contact')!==-1) best='contact';
+    if (hn.indexOf('problem')!==-1) best='problem';
+    if (hn.indexOf('solution')!==-1) best='solution';
+    if (hn.indexOf('social')!==-1) best='social';
+    if (hn.indexOf('industry')!==-1 || hn.indexOf('trade')!==-1) best='industry';
+    if (hn.indexOf('city')!==-1) best='city';
+    map[i] = best;
+  });
+  return map;
+}
+function onImportFile(ev){
+  var file = ev.target.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(){
+    var rows = parseCSV(String(reader.result||''));
+    if (rows.length < 2) { alert('That file has no data rows.'); return; }
+    importRows = rows;
+    importMap = autoMap(rows[0]);
+    renderImportPreview();
+    document.getElementById('importModal').classList.add('open');
+  };
+  reader.readAsText(file);
+  ev.target.value='';
+}
+function validateRow(obj){
+  if (!obj.name || !String(obj.name).trim()) return 'Missing name';
+  if (obj.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(obj.email).trim())) return 'Bad email';
+  if (obj.score !== '' && obj.score != null) { var s = Number(obj.score); if (isNaN(s) || s < 0 || s > 10) return 'Score outside 0–10'; }
+  return '';
+}
+function renderImportPreview(){
+  var header = importRows[0], data = importRows.slice(1);
+  var html = '<p>Match your columns to the lead fields, then review every row before anything is saved.</p>';
+  html += '<table><thead><tr><th>Your column</th><th>Maps to</th></tr></thead><tbody>';
+  header.forEach(function(h, i){
+    html += '<tr><td>'+esc(h)+'</td><td><select data-col="'+i+'" onchange="importMap[this.dataset.col]=this.value; renderImportPreview();">';
+    html += '<option value="">— ignore —</option>';
+    FIELDS.forEach(function(f){ html += '<option value="'+f+'"'+(importMap[i]===f?' selected':'')+'>'+FIELD_LABELS[f]+'</option>'; });
+    html += '</select></td></tr>';
+  });
+  html += '</tbody></table>';
+  html += '<h3 style="margin:16px 0 8px; color:#fff">Preview — first 10 rows</h3><table><thead><tr><th>Business</th><th>Score</th><th>Result</th></tr></thead><tbody>';
+  data.slice(0,10).forEach(function(r){
+    var obj = {}; header.forEach(function(h,i){ var f=importMap[i]; if (f) obj[f]=r[i]; });
+    var err = validateRow(obj);
+    var isDup = obj.name && state.leads.some(function(l){ return normName(l.name)===normName(obj.name); });
+    var res;
+    if (err) { res = '<span class="bad">Invalid — '+esc(err)+'</span>'; }
+    else if (isDup) { res = '<span class="bad">Duplicate — already in the tracker</span>'; }
+    else { res = '<span class="ok">Ready to import</span>'; }
+    html += '<tr><td>'+esc(obj.name||'(no name)')+'</td><td>'+esc(obj.score==null?'':obj.score)+'</td><td>'+res+'</td></tr>';
+  });
+  html += '</tbody></table>';
+  var totalOk = 0, totalDup = 0, totalBad = 0;
+  data.forEach(function(r){
+    var obj = {}; header.forEach(function(h,i){ var f=importMap[i]; if (f) obj[f]=r[i]; });
+    if (validateRow(obj)) totalBad++;
+    else if (obj.name && state.leads.some(function(l){ return normName(l.name)===normName(obj.name); })) totalDup++;
+    else totalOk++;
+  });
+  html += '<p><b>'+totalOk+' ready</b> · '+totalDup+' duplicates · '+totalBad+' invalid, out of '+data.length+' rows.</p>';
+  document.getElementById('importBody').innerHTML = html;
+  document.getElementById('confirmImportBtn').disabled = totalOk === 0;
+  document.getElementById('confirmImportBtn').textContent = 'Confirm import ('+totalOk+' leads)';
+}
+function closeImport(){ document.getElementById('importModal').classList.remove('open'); importRows=null; }
+function confirmImport(){
+  var header = importRows[0], data = importRows.slice(1);
+  var maxId = Math.max.apply(null, state.leads.map(function(l){return l.id}));
+  var maxRank = Math.max.apply(null, state.leads.map(function(l){return l.rank}));
+  var added = 0;
+  data.forEach(function(r){
+    var obj = {}; header.forEach(function(h,i){ var f=importMap[i]; if (f) obj[f]=r[i]; });
+    if (validateRow(obj)) return;
+    if (obj.name && state.leads.some(function(l){ return normName(l.name)===normName(obj.name); })) return;
+    maxId++; maxRank++;
+    state.leads.push({id:maxId, rank:maxRank, name:String(obj.name).trim(), industry:obj.industry||'', city:obj.city||'',
+      website:obj.website||'No website — not recorded', social:obj.social||'Not recorded', phone:obj.phone||'', email:obj.email||'',
+      problem:obj.problem||'', solution:obj.solution||'', score:(obj.score==null||obj.score===''?0:Number(obj.score)),
+      contact:obj.contact||'', status:'new'});
+    added++;
+  });
+  save(); closeImport(); sortLeads(); save(); renderLeads();
+  alert(added + ' lead' + (added===1?'':'s') + ' imported as Not contacted.');
+}
+
+renderLeads();
+fillCustomers();
+</script>
+</body>
+</html>
