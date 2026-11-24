@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ghana Website Leads Tracker</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; background: #101511; color: #e8ecef; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 26px 22px 40px; }
+.tabs { display: flex; background: #1a211c; border: 1px solid #2b332e; border-radius: 999px; padding: 4px; }
+.tabs button { flex: 1; background: transparent; color: #a3b0a6; border: 0; border-radius: 999px; padding: 12px 10px; font-size: 15px; font-weight: 600; cursor: pointer; }
+.tabs button.active { background: #ffffff; color: #111111; }
+.stats { display: grid; grid-template-columns: repeat(5, 1fr); background: #1a211c; border: 1px solid #2b332e; border-radius: 14px; overflow: hidden; margin-top: 22px; }
+.stat { padding: 18px 20px 16px; border-left: 1px solid #2b332e; }
+.stat:first-child { border-left: 0; }
+.stat-label { display: block; font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: #94a198; margin-bottom: 8px; }
+.stat-num { display: block; font-size: 28px; font-weight: 700; color: #ffffff; line-height: 1.1; }
+.stat-num i { font-style: normal; font-size: 18px; color: #6f7f72; font-weight: 400; }
+.stat-cap { display: block; font-size: 13px; color: #94a198; margin-top: 6px; }
+.process { color: #a3b0a6; font-size: 14px; line-height: 1.5; margin: 18px 2px 0; }
+.search-row { display: flex; gap: 16px; margin-top: 22px; }
+.search-row > div { flex: 1; }
+.search-row label, .field-label { display: block; color: #c7cfd6; font-size: 13px; margin-bottom: 7px; }
+input, select, textarea { background: #1a211c; border: 1px solid #2b332e; border-radius: 10px; color: #e8ecef; padding: 12px 14px; font-size: 14px; width: 100%; }
+input::placeholder, textarea::placeholder { color: #6f7f72; }
+select { appearance: none; }
+.combo { position: relative; }
+.combo input { padding-right: 58px; }
+.combo-arrow { position: absolute; right: 13px; top: 50%; transform: translateY(-50%); color: #94a198; pointer-events: none; font-size: 12px; }
+.combo-clear { position: absolute; right: 34px; top: 50%; transform: translateY(-50%); color: #94a198; cursor: pointer; font-size: 17px; line-height: 1; display: none; padding: 2px 5px; border-radius: 6px; }
+.combo-clear:hover { color: #ffffff; background: #2a332d; }
+.combo-clear.show { display: block; }
+.back-top { position: fixed; right: 22px; bottom: 22px; width: 44px; height: 44px; border-radius: 50%; background: #1e7a34; color: #ffffff; border: 0; font-size: 20px; line-height: 1; cursor: pointer; z-index: 100; display: none; box-shadow: 0 4px 14px rgba(0,0,0,.45); padding-bottom: 2px; }
+.back-top.show { display: block; }
+.combo-list { position: absolute; left: 0; right: 0; top: calc(100% + 6px); background: #1a211c; border: 1px solid #2b332e; border-radius: 10px; max-height: 260px; overflow-y: auto; z-index: 50; box-shadow: 0 10px 30px rgba(0,0,0,.5); display: none; }
+.combo-list.open { display: block; }
+.combo-opt { padding: 10px 14px; font-size: 14px; color: #e8ecef; cursor: pointer; }
+.combo-opt:hover { background: #2a332d; }
+.combo-opt.all { color: #94a198; }
+.combo-opt.none { color: #94a198; cursor: default; }
+.pills { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+.pills button { background: #1a211c; border: 1px solid #2b332e; color: #c7cfd6; border-radius: 999px; padding: 9px 16px; font-size: 14px; cursor: pointer; }
+.pills button.active { background: #ffffff; color: #111111; border-color: #ffffff; }
+.count-row { display: flex; align-items: center; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+.count-row .count { font-size: 15px; font-weight: 600; color: #ffffff; }
+.count-row .spacer { flex: 1; }
+.btn-import { background: #28302a; color: #ffffff; border: 1px solid #3d4741; border-radius: 999px; padding: 10px 20px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.btn-csv { background: transparent; color: #4ace51; border: 1px solid #2f9e44; border-radius: 999px; padding: 10px 20px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.btn-ghost { background: transparent; color: #94a198; border: 1px solid #2b332e; border-radius: 999px; padding: 8px 16px; font-size: 13px; cursor: pointer; }
+button { font-family: inherit; }
+main { margin-top: 18px; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; background: #141a15; border: 1px solid #2b332e; border-radius: 12px; overflow: hidden; min-width: 640px; }
+th { background: #1a211c; color: #94a198; text-align: left; padding: 11px 12px; font-size: 11px; letter-spacing: .07em; text-transform: uppercase; }
+td { padding: 12px; border-top: 1px solid #2a332d; font-size: 13px; vertical-align: top; color: #d5dbdf; overflow-wrap: anywhere; word-break: break-word; }
+tr.detail td { background: #1a211c; }
+td .name { font-weight: 700; color: #ffffff; cursor: pointer; }
+td .score { font-weight: 700; color: #ffffff; font-size: 15px; }
+td .sub { color: #94a198; font-size: 12px; }
+.pill { display: inline-block; border-radius: 20px; padding: 2px 9px; font-size: 12px; font-weight: 600; }
+.pill.new { background: #28302a; color: #a3b0a6; }
+.pill.built { background: #1d3a5f; color: #7fb3e8; }
+.pill.contacted { background: #173d24; color: #4ace51; }
+.pill.booked { background: #4a3a10; color: #e8c15a; }
+.pill.noreply { background: #4a3410; color: #e8a54b; }
+.pill.declined { background: #4a1a1a; color: #e88a8a; }
+.pill.notavailable { background: #333a34; color: #c9d1c9; }
+.status-btns { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
+.status-btns button { padding: 5px 9px; font-size: 12px; border-radius: 6px; background: #202a23; color: #c7cfd6; border: 1px solid #2b332e; cursor: pointer; }
+.status-btns button.on-built { background: #1b4f9c; color: #fff; border-color: #1b4f9c; }
+.status-btns button.on-contacted { background: #1e7a34; color: #fff; border-color: #1e7a34; }
+.status-btns button.on-booked { background: #d9a521; color: #111; border-color: #d9a521; }
+.detail-box { font-size: 13px; line-height: 1.55; color: #c7cfd6; }
+.detail-box b { color: #ffffff; }
+.foot-note { color: #94a198; font-size: 13px; line-height: 1.6; margin-top: 26px; }
+.card { background: #1a211c; border: 1px solid #2b332e; border-radius: 12px; padding: 18px; margin-top: 18px; }
+.card h2 { margin: 0 0 12px; font-size: 16px; color: #ffffff; }
+.card label { display: block; font-size: 13px; margin: 10px 0 5px; color: #c7cfd6; }
+.card textarea { min-height: 70px; }
+.card .btn-save { background: #ffffff; color: #111111; border: 0; border-radius: 999px; padding: 10px 20px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 12px; }
+.row { display: flex; gap: 12px; flex-wrap: wrap; }
+.row > div { flex: 1; min-width: 160px; }
+.entry { border-top: 1px solid #2b332e; padding: 12px 0; font-size: 13px; line-height: 1.55; color: #d5dbdf; }
+.entry:first-of-type { border-top: 0; }
+.entry .meta { color: #94a198; font-size: 12px; }
+.entry button { margin-top: 6px; }
+.linkbtn { color: #7fb3e8; text-decoration: none; font-weight: 600; margin-right: 14px; }
+.modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 50; overflow-y: auto; }
+.modal.open { display: block; }
+.modal-box { background: #1a211c; border: 1px solid #2b332e; max-width: 860px; margin: 40px auto; border-radius: 14px; padding: 22px; color: #d5dbdf; }
+.modal-box h2 { margin: 0 0 10px; color: #ffffff; }
+.modal-box table { background: #141a15; min-width: 0; }
+.modal-box th { font-size: 12px; }
+.modal-box td { font-size: 12px; }
+.bad { color: #ff8a80; font-weight: 600; }
+.ok { color: #4ace51; font-weight: 600; }
+.lead-card { background: #1a211c; border: 1px solid #2b332e; border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; }
+.lead-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.lead-rank { color: #94a198; font-size: 15px; font-weight: 600; margin-right: 10px; }
+.lead-name { color: #ffffff; font-weight: 700; font-size: 17px; cursor: pointer; }
+.lead-rank, .lead-name, .section-title, h1 { font-family: "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif; }
+.lead-action-btns { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 4px; }
+.lead-action-btns a { border-radius: 999px; padding: 8px 16px; font-size: 14px; font-weight: 600; text-decoration: none; }
+.btn-wa { background: #4caf50; color: #101511; }
+.btn-line { background: #202a23; border: 1px solid #2b332e; color: #ffffff; }
+.lead-meta { color: #94a198; font-size: 13px; margin-top: 6px; }
+.lead-score { color: #c7cfd6; font-size: 13px; text-align: right; white-space: nowrap; }
+.lead-score b { color: #ffffff; }
+.lead-web { margin-top: 10px; font-size: 14px; color: #d5dbdf; line-height: 1.5; }
+.lead-web b { color: #ffffff; }
+.lead-btns { display: flex; gap: 10px; margin-top: 14px; }
+.lead-btns button { flex: 1; background: #202a23; color: #e8ecef; border: 1px solid #2b332e; border-radius: 999px; padding: 11px 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.lead-btns button.on-built { background: #1b4f9c; border-color: #1b4f9c; color: #fff; }
+.lead-btns button.on-contacted { background: #1e7a34; border-color: #1e7a34; color: #fff; }
+.lead-btns button.on-booked { background: #d9a521; border-color: #d9a521; color: #111; }
+.lead-btns2 { margin-top: 8px; }
+.lead-btns2 button { background: transparent; color: #94a198; padding: 9px 8px; font-size: 13px; }
+.lead-btns2 button.on-noreply { background: #b7791f; border-color: #b7791f; color: #111; }
+.lead-btns2 button.on-declined { background: #a93226; border-color: #a93226; color: #fff; }
+.lead-plain { display: flex; gap: 28px; margin-top: 10px; }
+.lead-plain .plain-opt { color: #94a198; font-size: 14px; text-decoration: underline; cursor: pointer; }
+.lead-plain .plain-opt.on-noreply { color: #e8a54b; font-weight: 700; }
+.lead-plain .plain-opt.on-declined { color: #e88a8a; font-weight: 700; }
+.lead-plain .plain-opt.on-notavailable { color: #c9d1c9; font-weight: 700; }
+.lead-detail-toggle { color: #4ace51; font-weight: 600; font-size: 14px; margin-top: 14px; cursor: pointer; display: inline-block; }
+.lead-detail { margin-top: 12px; font-size: 13px; line-height: 1.55; color: #c7cfd6; border-top: 1px solid #2b332e; padding-top: 12px; }
+.lead-detail b { color: #ffffff; }
+.lead-detail p { margin: 0 0 12px; }
+.lead-reset { color: #94a198; background: none; border: 0; font-size: 12px; cursor: pointer; margin-top: 10px; padding: 0; text-decoration: underline; }
+.section-title { color: #ffffff; font-size: 19px; margin: 26px 0 12px; }
+.dashed-add { display: block; width: 100%; background: transparent; border: 1.5px dashed #2f9e44; color: #4ace51; border-radius: 12px; padding: 15px; font-size: 15px; font-weight: 600; cursor: pointer; }
+.empty-card { background: #1a211c; border: 1px solid #2b332e; border-radius: 12px; padding: 16px 18px; margin-top: 12px; color: #c7cfd6; font-size: 14px; line-height: 1.55; }
+.form-card { background: #1a211c; border: 1px solid #2b332e; border-radius: 12px; padding: 18px; margin-top: 12px; }
+.form-card label { display: block; font-size: 13px; margin: 10px 0 5px; color: #c7cfd6; }
+@media (max-width: 720px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .stat:nth-child(3) { border-left: 0; }
+  .stat:nth-child(n+3) { border-top: 1px solid #2b332e; }
+  .search-row { flex-direction: column; }
+  th:nth-child(3), td:nth-child(3), th:nth-child(5), td:nth-child(5) { display: none; }
+}
+.topbar { display: flex; justify-content: flex-end; margin-bottom: 14px; }
+#loginScreen { position: fixed; inset: 0; background: #101511; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.login-card { background: #1a211c; border: 1px solid #2b332e; border-radius: 14px; padding: 30px 26px; width: 360px; max-width: 100%; }
+.login-card h1 { margin: 0 0 6px; font-size: 20px; color: #ffffff; }
+.login-card p { margin: 0 0 18px; color: #94a198; font-size: 13px; line-height: 1.5; }
+.login-card label { display: block; color: #c7cfd6; font-size: 13px; margin: 12px 0 6px; }
+.login-card .btn-login { width: 100%; background: #ffffff; color: #111111; border: 0; border-radius: 999px; padding: 12px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 18px; }
+#loginErr { color: #ff8a80; font-size: 13px; margin: 12px 0 0; min-height: 18px; }
+
+#saveToast { position: fixed; left: 22px; bottom: 22px; background: #1e7a34; color: #ffffff; border-radius: 999px; padding: 10px 18px; font-size: 14px; font-weight: 600; z-index: 120; display: none; box-shadow: 0 4px 14px rgba(0,0,0,.45); }
+#saveToast.show { display: block; }
+#saveToast.err { background: #a93226; }
+#loadErr { display: none; background: #4a1a1a; border: 1px solid #7a2e2e; color: #f3c1c1; border-radius: 12px; padding: 16px 18px; margin-top: 18px; font-size: 14px; line-height: 1.55; }
+.login-wa { display: block; text-align: center; margin-top: 16px; color: #4ace51; font-size: 13px; text-decoration: none; }
+</style>
+</head>
+<body>
+<div id="loginScreen"><div class="login-card">
+<h1>Ghana Website Leads Tracker</h1>
+<p>Log in to open your tracker. Only one email can log in.</p>
+<label for="loginEmail">Email</label>
+<input id="loginEmail" type="email" placeholder="Your email" autocomplete="username">
+<label for="loginPass">Password</label>
+<input id="loginPass" type="password" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()">
+<button class="btn-login" onclick="doLogin()">Log in</button>
+<a class="login-wa" target="_blank" rel="noreferrer" href="https://wa.me/0552244805">Can't log in? Contact Creator on WhatsApp</a>
+<p id="loginErr"></p>
+</div></div>
+<div class="wrap">
+<div class="topbar"><button class="btn-ghost" onclick="doLogout()">Log out</button></div>
+<div class="tabs">
+<button id="tabLeads" class="active" onclick="showTab('leads')">Leads</button>
+<button id="tabFb" onclick="showTab('fb')">Feedback &amp; contracts</button>
+</div>
+
+<div id="pageLeads">
+<div class="stats">
+<div class="stat"><span class="stat-label">Researched</span><span class="stat-num"><b id="stResearched">310</b> <i>/ <span class="tot">310</span></i></span><span class="stat-cap">verified leads</span></div>
+<div class="stat"><span class="stat-label">Site built</span><span class="stat-num"><b id="stBuilt">0</b> <i>/ <span class="tot">310</span></i></span><span class="stat-cap">ready to send</span></div>
+<div class="stat"><span class="stat-label">Contacted</span><span class="stat-num"><b id="stContacted">0</b> <i>/ <span class="tot">310</span></i></span><span class="stat-cap">site sent</span></div>
+<div class="stat"><span class="stat-label">Booked</span><span class="stat-num"><b id="stBooked">0</b> <i>/ <span class="tot">310</span></i></span><span class="stat-cap">paying clients</span></div>
+</div>
+<p class="process">Your process: research &rarr; build the site &rarr; contact them with it finished. Tap a lead&rsquo;s buttons to move it along &mdash; every mark is saved in Supabase, so it is the same on your phone and laptop.</p>
+<div class="search-row">
+<div style="flex:1"><label for="tradeInput">Trade / niche</label><div class="combo"><input id="tradeInput" placeholder="All niches — tap for niches, or type a niche or business name" autocomplete="off" onfocus="openCombo('trade')" oninput="onComboInput('trade')" onclick="openCombo('trade')"><span class="combo-clear" id="tradeClear" onclick="clearCombo('trade')" title="Clear filter">×</span><span class="combo-arrow">▾</span><div class="combo-list" id="tradeList"></div></div></div>
+<div style="flex:0.75"><label for="cityInput">City</label><div class="combo"><input id="cityInput" placeholder="All cities — tap for regions, or type a region or business name" autocomplete="off" onfocus="openCombo('city')" oninput="onComboInput('city')" onclick="openCombo('city')"><span class="combo-clear" id="cityClear" onclick="clearCombo('city')" title="Clear filter">×</span><span class="combo-arrow">▾</span><div class="combo-list" id="cityList"></div></div></div>
+<div style="flex:0.7"><label for="webInput">Website</label><div class="combo"><input id="webInput" placeholder="All websites — tap to filter by website problem" autocomplete="off" onfocus="openCombo('website')" oninput="onComboInput('website')" onclick="openCombo('website')"><span class="combo-clear" id="webClear" onclick="clearCombo('website')" title="Clear filter">×</span><span class="combo-arrow">▾</span><div class="combo-list" id="webList"></div></div></div>
+<div style="flex:0.5"><label for="newInput">Newly built</label><div class="combo"><input id="newInput" placeholder="All businesses" autocomplete="off" onfocus="openCombo('newly')" oninput="onComboInput('newly')" onclick="openCombo('newly')"><span class="combo-clear" id="newClear" onclick="clearCombo('newly')" title="Clear filter">×</span><span class="combo-arrow">▾</span><div class="combo-list" id="newList"></div></div></div>
+</div>
+<div class="pills" id="pills">
+<button data-f="" class="active" onclick="setFilter('', this)">All leads</button>
+<button data-f="new" onclick="setFilter('new', this)">Not contacted (<span id="pcNew">310</span>)</button>
+<button data-f="built" onclick="setFilter('built', this)">Site built (<span id="pcBuilt">0</span>)</button>
+<button data-f="contacted" onclick="setFilter('contacted', this)">Contacted (<span id="pcContacted">0</span>)</button>
+<button data-f="booked" onclick="setFilter('booked', this)">Booked (<span id="pcBooked">0</span>)</button>
+<button data-f="noreply" onclick="setFilter('noreply', this)">No reply (<span id="pcNoreply">0</span>)</button>
+<button data-f="declined" onclick="setFilter('declined', this)">Declined (<span id="pcDeclined">0</span>)</button>
+<button data-f="notavailable" onclick="setFilter('notavailable', this)">Not available (<span id="pcNotavail">0</span>)</button>
+</div>
+<div class="count-row">
+<span class="count" id="count">310 of 310 leads</span>
+<span class="spacer"></span>
+<button class="btn-import" onclick="openImportChoice()">Import Leads</button>
+<input id="csvFile" type="file" accept=".csv,text/csv" style="display:none" onchange="onImportFile(event)">
+<button class="btn-csv" onclick="downloadCSV()">Download CSV</button>
+</div>
+<div id="loadErr"></div>
+<main id="cards"></main>
+<p class="foot-note">Lead details from your verified research &mdash; round 1, 21 November 2026 and round 2, 22 November 2026 (all scores /10). In this copy, marks save in Supabase, so they are the same on your phone and laptop. &nbsp;<button class="btn-ghost" onclick="resetAll()">Reset data</button></p>
+</div>
+
+<div id="pageFb" style="display:none">
+<div class="stats">
+<div class="stat"><span class="stat-label">Feedback logged</span><span class="stat-num"><b id="stFb">0</b></span><span class="stat-cap">entries saved</span></div>
+<div class="stat"><span class="stat-label">Active contracts</span><span class="stat-num"><b id="stContracts">0</b></span><span class="stat-cap">clients on the books</span></div>
+<div class="stat"><span class="stat-label">Monthly recurring</span><span class="stat-num">GH&cent; <b id="stMonthly">0</b></span><span class="stat-cap">from active monthly contracts</span></div>
+<div class="stat"><span class="stat-label">Total earnings</span><span class="stat-num">GH&cent; <b id="stEarnings">0</b></span><span class="stat-cap">from all contracts</span></div>
+<div class="stat"><span class="stat-label">Contracts total</span><span class="stat-num"><b id="stContractsTotal">0</b></span><span class="stat-cap">active, pending &amp; ended</span></div>
+</div>
+<p class="process">Write down what each customer said, the changes you made after, and the contracts you have with them &mdash; everything is saved in Supabase, so it is the same on every device.</p>
+<div style="margin-top:22px"><label class="field-label" for="fbCustomer">Show one customer</label>
+<select id="fbCustomer" onchange="renderFb()"></select></div>
+<h2 class="section-title">Customer feedback &amp; changes</h2>
+<button class="dashed-add" onclick="openFbForm()">+ Add customer feedback</button>
+<div id="fbForm" class="form-card" style="display:none">
+<label for="fbAddCustomer">Customer</label>
+<select id="fbAddCustomer"></select>
+<label for="fbText">What they said</label>
+<textarea id="fbText" placeholder="What the customer said&hellip;"></textarea>
+<label for="fbChanges">Changes made after</label>
+<textarea id="fbChanges" placeholder="What you changed because of it&hellip;"></textarea>
+<button class="btn-save" id="fbSaveBtn" onclick="addFeedback()">Save feedback</button>
+</div>
+<div id="fbList"></div>
+<h2 class="section-title">Contracts</h2>
+<button class="dashed-add" onclick="openCtForm()">+ Add a contract</button>
+<div id="ctForm" class="form-card" style="display:none">
+<label for="ctCustomer">Customer</label>
+<select id="ctCustomer"></select>
+<label for="ctWhat">What was agreed</label>
+<input id="ctWhat" placeholder="e.g. Full website rebuild + hosting">
+<div class="row">
+<div><label for="ctAmount">Amount (GH&cent;)</label><input id="ctAmount" type="number" min="0" step="1" placeholder="0"></div>
+<div><label for="ctBilling">Billing</label><select id="ctBilling"><option value="monthly">Monthly</option><option value="one-off">One-off</option><option value="yearly">Yearly</option></select></div>
+<div><label for="ctStatus">Status</label><select id="ctStatus"><option value="active">Active</option><option value="pending">Pending</option><option value="ended">Ended</option></select></div>
+</div>
+<div class="row">
+<div><label for="ctStart">Start date</label><input id="ctStart" type="date"></div>
+<div><label for="ctRenew">Renewal date</label><input id="ctRenew" type="date"></div>
+</div>
+<div class="row">
+<div><label for="ctWeb">Website link</label><input id="ctWeb" type="url" placeholder="https://&hellip;"></div>
+<div><label for="ctDrive">Drive link</label><input id="ctDrive" type="url" placeholder="https://drive.google.com/&hellip;"></div>
+</div>
+<label for="ctNotes">Notes</label>
+<textarea id="ctNotes"></textarea>
+<button class="btn-save" id="ctSaveBtn" onclick="addContract()">Save contract</button>
+</div>
+<div id="ctList"></div>
+</div>
+</div>
+
+<div class="modal" id="importModal"><div class="modal-box">
+<h2>Import Leads</h2>
+<div id="importBody"></div>
+<div style="margin-top:14px; display:flex; gap:10px; justify-content:flex-end">
+<button class="btn-ghost" onclick="closeImport()">Cancel</button>
+<button id="confirmImportBtn" class="btn-save" style="margin-top:0" onclick="confirmImport()" disabled>Confirm import</button>
+</div>
+</div></div>
+
+<div class="modal" id="choiceModal"><div class="modal-box" style="max-width:520px">
+<h2>Add a lead</h2>
+<p>How do you want to add it?</p>
+<div style="display:flex; flex-direction:column; gap:10px; margin-top:16px">
+<button class="btn-save" style="margin-top:0" onclick="closeChoice(); document.getElementById('csvFile').click()">Import from CSV</button>
+<button class="btn-save" style="margin-top:0; background:#1b4f9c; color:#fff" onclick="closeChoice(); openManual()">Enter a lead manually</button>
+</div>
+<div style="margin-top:14px; display:flex; justify-content:flex-end">
+<button class="btn-ghost" onclick="closeChoice()">Cancel</button>
+</div>
+</div></div>
+
+<div class="modal" id="manualModal"><div class="modal-box">
+<h2>Enter a lead manually</h2>
+<p>Only the business name is required. Leave anything else blank and it will just show as not filled in on the Leads page.</p>
+<div class="form-card">
+<label>Business name *</label><input id="mnName" placeholder="Business name">
+<label>Industry / niche</label><input id="mnIndustry" placeholder="e.g. Private hospital">
+<label>City</label><input id="mnCity" placeholder="e.g. Accra">
+<label>Website condition</label><input id="mnWebsite" placeholder="e.g. No website, or the site address">
+<label>Social presence</label><input id="mnSocial" placeholder="e.g. Instagram 5K followers">
+<label>Phone</label><input id="mnPhone" placeholder="e.g. 024 000 0000">
+<label>Email</label><input id="mnEmail" placeholder="e.g. info@business.com">
+<label>Problem spotted</label><textarea id="mnProblem" placeholder="What is wrong with their current website, or what they are missing"></textarea>
+<label>What you'll build</label><textarea id="mnSolution" placeholder="The website you would build for them"></textarea>
+<label>Score (0–10, optional)</label><input id="mnScore" type="number" min="0" max="10" step="0.1" placeholder="e.g. 8.5">
+<label>Best contact</label><input id="mnContact" placeholder="e.g. WhatsApp 024 000 0000">
+<div id="mnErr" style="color:#e88a8a; font-size:13px; margin-top:10px"></div>
+<div style="margin-top:14px; display:flex; gap:10px; justify-content:flex-end">
+<button class="btn-ghost" onclick="closeManual()">Cancel</button>
+<button class="btn-save" style="margin-top:0" onclick="addLeadManual()">Save lead</button>
+</div>
+</div>
+</div></div>
+
+<script>
+/* ---- Supabase: your leads now live online, so your phone and laptop
+   always see the same marks. The key below is the publishable key —
+   it is safe to be in this file. The secret key must NEVER go here. ---- */
+var SUPABASE_URL = 'https://vukwidadalxetvoylroz.supabase.co';
+var SUPABASE_KEY = 'sb_publishable_palBv4WswtwJ-HUfZEPqNw__4WqqeBE';
+var sb = null;
+var state = { leads: [], feedback: [], contracts: [] };
+var statusFilter = '';
+var importRows = null, importMap = null;
+var editingFb = null, editingCt = null;
+var dataLoaded = false;
+
+function toast(msg, isErr){
+  var t = document.getElementById('saveToast');
+  t.textContent = msg;
+  t.className = 'show' + (isErr ? ' err' : '');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(function(){ t.className = ''; }, 2600);
+}
+function showLoadError(msg){
+  var el = document.getElementById('loadErr');
+  el.innerHTML = '<b>Could not load your leads.</b> ' + esc(msg) + ' <button class="btn-ghost" onclick="loadData()">Try again</button>';
+  el.style.display = 'block';
+  document.getElementById('cards').innerHTML = '';
+}
+function showApp(){ document.getElementById('loginScreen').style.display = 'none'; }
+
+async function doLogin(){
+  var email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  var pass = document.getElementById('loginPass').value;
+  var err = document.getElementById('loginErr');
+  err.textContent = '';
+  if (!sb) { err.textContent = 'Could not reach Supabase — check your internet connection and reload the page.'; return; }
+  var res = await sb.auth.signInWithPassword({email: email, password: pass});
+  if (res.error) { err.textContent = 'Invalid email and password.'; return; }
+  showApp();
+  loadData();
+}
+async function doLogout(){
+  try { await sb.auth.signOut(); } catch(e){}
+  location.reload();
+}
+
+/* Supabase stores columns with underscores; the app uses camelCase. */
+function mapLead(r){
+  return {id:r.id, rank:r.rank, name:r.name, industry:r.industry||'', city:r.city||'', website:r.website||'', social:r.social||'', phone:r.phone||'', email:r.email||'', problem:r.problem||'', solution:r.solution||'', score:r.score, contact:r.contact||'', status:r.status||'new', builtAt:r.built_at||null, contactedAt:r.contacted_at||null, bookedAt:r.booked_at||null};
+}
+function mapFeedback(r){
+  return {id:r.id, leadId:r.lead_id, customer:r.customer, text:r.text, changes:r.changes||'', date:r.date||''};
+}
+function mapContract(r){
+  return {id:r.id, leadId:r.lead_id, customer:r.customer, what:r.what, amount:r.amount, billing:r.billing, status:r.status, start:r.start_date||'', renew:r.renew_date||'', web:r.web||'', drive:r.drive||'', notes:r.notes||''};
+}
+
+async function loadData(){
+  if (!sb) return;
+  document.getElementById('loadErr').style.display = 'none';
+  document.getElementById('cards').innerHTML = '<div class="empty-card">Loading your leads…</div>';
+  var lr = await sb.from('leads').select('*').order('rank', {ascending:true});
+  if (lr.error) { showLoadError(lr.error.message || 'The leads table could not be read. Did you run schema.sql and seed.sql in Supabase?'); return; }
+  var fr = await sb.from('feedback').select('*').order('created_at', {ascending:false});
+  var cr = await sb.from('contracts').select('*').order('created_at', {ascending:false});
+  if (fr.error || cr.error) { showLoadError(((fr.error || cr.error).message) || 'Could not read feedback and contracts.'); return; }
+  state.leads = lr.data.map(mapLead);
+  state.feedback = fr.data.map(mapFeedback);
+  state.contracts = cr.data.map(mapContract);
+  dataLoaded = true;
+  renderLeads();
+  renderFb();
+}
+
+async function setStatus(id, st){
+  var l = state.leads.find(function(x){return x.id===id});
+  if (!l || !dataLoaded) return;
+  var oldStatus = l.status, oldBuilt = l.builtAt, oldContacted = l.contactedAt, oldBooked = l.bookedAt;
+  if (l.status === st) st = 'new';  // tapping the selected button again unselects it
+  l.status = st;
+  var now = new Date().toISOString().slice(0,10);
+  if (st==='built') l.builtAt = now; else if (st==='contacted') l.contactedAt = now; else if (st==='booked') l.bookedAt = now;
+  if (st==='new') { l.builtAt=null; l.contactedAt=null; l.bookedAt=null; }
+  renderLeads();
+  var res = await sb.from('leads').update({status: st, built_at: l.builtAt, contacted_at: l.contactedAt, booked_at: l.bookedAt}).eq('id', id);
+  if (res.error) {
+    l.status = oldStatus; l.builtAt = oldBuilt; l.contactedAt = oldContacted; l.bookedAt = oldBooked;
+    renderLeads();
+    toast('Could not save — check your connection and try again.', true);
+    return;
+  }
+  toast('Saved ✓');
+}
+
+async function persistRanks(){
+  var rows = state.leads.map(function(l){ return {id:l.id, rank:l.rank}; });
+  var res = await sb.from('leads').upsert(rows, {onConflict:'id'});
+  return res.error || null;
+}
+
+async function resetAll(){
+  if (!confirm('Reset everything back to the original 310 leads? Your marks, feedback and contracts on EVERY device will be cleared.')) return;
+  var r1 = await sb.from('feedback').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  var r2 = await sb.from('contracts').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  var r3 = await sb.from('leads').delete().gt('id', 1199);
+  var r4 = await sb.from('leads').update({status:'new', built_at:null, contacted_at:null, booked_at:null}).neq('id', 0);
+  var err = r1.error || r2.error || r3.error || r4.error;
+  if (err) { toast('Could not reset — ' + (err.message || 'check your connection and try again.'), true); return; }
+  await loadData();
+  toast('Reset — back to the original 310 leads.');
+}
+
+function leadIdByName(name){
+  var l = state.leads.find(function(x){ return x.name === name; });
+  return l ? l.id : null;
+}
+
+/* ---- Feedback & contracts ---- */
+function openFbForm(){ editingFb = null; document.getElementById('fbSaveBtn').textContent = 'Save feedback'; document.getElementById('fbText').value=''; document.getElementById('fbChanges').value=''; var f=document.getElementById('fbForm'); f.style.display = f.style.display==='none' ? '' : 'none'; }
+function openCtForm(){ editingCt = null; document.getElementById('ctSaveBtn').textContent = 'Save contract'; ['ctWhat','ctAmount','ctStart','ctRenew','ctWeb','ctDrive','ctNotes'].forEach(function(id){ document.getElementById(id).value=''; }); document.getElementById('ctBilling').value='monthly'; document.getElementById('ctStatus').value='active'; var f=document.getElementById('ctForm'); f.style.display = f.style.display==='none' ? '' : 'none'; }
+
+function renderFb(){
+  var cust = document.getElementById('fbCustomer').value;
+  var addSel = document.getElementById('fbAddCustomer');
+  if (addSel && cust) addSel.value = cust;
+  var fb = cust ? state.feedback.filter(function(f){ return f.customer===cust; }) : state.feedback;
+  var ct = cust ? state.contracts.filter(function(c){ return c.customer===cust; }) : state.contracts;
+  document.getElementById('stFb').textContent = state.feedback.length;
+  var active = state.contracts.filter(function(c){ return c.status==='active'; });
+  document.getElementById('stContracts').textContent = active.length;
+  document.getElementById('stContractsTotal').textContent = state.contracts.length;
+  var monthly = active.filter(function(c){ return c.billing==='monthly'; }).reduce(function(s,c){ return s + (Number(c.amount)||0); }, 0);
+  document.getElementById('stMonthly').textContent = fmtMoney(monthly);
+  var earnings = state.contracts.reduce(function(s,c){ return s + (Number(c.amount)||0); }, 0);
+  document.getElementById('stEarnings').textContent = fmtMoney(earnings);
+  document.getElementById('fbList').innerHTML = fb.length ? fb.map(function(f){
+    return '<div class="entry"><b>'+esc(f.customer)+'</b><div class="meta">'+esc(f.date)+'</div><div><b>They said:</b> '+esc(f.text)+'</div><div><b>Changes made:</b> '+esc(f.changes||'—')+'</div><button class="btn-ghost" onclick="editFeedback(\''+f.id+'\')">Edit</button> <button class="btn-ghost" onclick="delFeedback(\''+f.id+'\')">Delete</button></div>';
+  }).join('') : '<div class="empty-card">No feedback written yet. When a customer tells you what they think of their site, write it here — and what you changed after.</div>';
+  document.getElementById('ctList').innerHTML = ct.length ? ct.map(function(c){
+    return '<div class="entry"><b>'+esc(c.customer)+'</b> — '+esc(c.what)+' — <b>GH&cent; '+fmtMoney(c.amount)+'</b> ('+esc(c.billing)+', '+esc(c.status)+')<div class="meta">Start: '+esc(c.start||'—')+' · Renewal: '+esc(c.renew||'—')+'</div><div>'+(c.web?'<a class="linkbtn" target="_blank" href="'+esc(c.web)+'">Website</a>':'')+(c.drive?'<a class="linkbtn" target="_blank" href="'+esc(c.drive)+'">Drive folder</a>':'')+'</div>'+(c.notes?'<div>'+esc(c.notes)+'</div>':'')+'<button class="btn-ghost" onclick="editContract(\''+c.id+'\')">Edit</button> <button class="btn-ghost" onclick="delContract(\''+c.id+'\')">Delete</button></div>';
+  }).join('') : '<div class="empty-card">No contracts yet. When a customer agrees to a site or a monthly care plan, add it here so you always know who owes what, and when it renews.</div>';
+}
+function editFeedback(id){
+  var f = state.feedback.find(function(x){ return x.id === id; }); if (!f) return;
+  editingFb = id;
+  document.getElementById('fbAddCustomer').value = f.customer;
+  document.getElementById('fbText').value = f.text;
+  document.getElementById('fbChanges').value = f.changes || '';
+  document.getElementById('fbSaveBtn').textContent = 'Save changes';
+  document.getElementById('fbForm').style.display = '';
+}
+async function addFeedback(){
+  var cust = document.getElementById('fbAddCustomer').value;
+  var text = document.getElementById('fbText').value.trim();
+  var changes = document.getElementById('fbChanges').value.trim();
+  if (!cust) { alert('Pick a customer first.'); return; }
+  if (!text) { alert('Write what the customer said first.'); return; }
+  if (editingFb) {
+    var res = await sb.from('feedback').update({lead_id: leadIdByName(cust), customer: cust, text: text, changes: changes}).eq('id', editingFb);
+    if (res.error) { toast('Could not save — ' + (res.error.message || 'check your connection and try again.'), true); return; }
+    var f = state.feedback.find(function(x){ return x.id === editingFb; });
+    if (f) { f.leadId = leadIdByName(cust); f.customer = cust; f.text = text; f.changes = changes; }
+    editingFb = null;
+    document.getElementById('fbSaveBtn').textContent = 'Save feedback';
+  } else {
+    var today = new Date().toISOString().slice(0,10);
+    var ins = await sb.from('feedback').insert({lead_id: leadIdByName(cust), customer: cust, text: text, changes: changes, date: today}).select();
+    if (ins.error || !ins.data || !ins.data.length) { toast('Could not save — ' + ((ins.error && ins.error.message) || 'check your connection and try again.'), true); return; }
+    state.feedback.unshift(mapFeedback(ins.data[0]));
+  }
+  document.getElementById('fbText').value=''; document.getElementById('fbChanges').value='';
+  document.getElementById('fbForm').style.display='none';
+  renderFb();
+  toast('Saved ✓');
+}
+async function delFeedback(id){
+  if (!confirm('Delete this feedback entry?')) return;
+  var res = await sb.from('feedback').delete().eq('id', id);
+  if (res.error) { toast('Could not delete — ' + (res.error.message || 'check your connection and try again.'), true); return; }
+  state.feedback = state.feedback.filter(function(x){ return x.id !== id; });
+  renderFb();
+  toast('Deleted.');
+}
+function editContract(id){
+  var c = state.contracts.find(function(x){ return x.id === id; }); if (!c) return;
+  editingCt = id;
+  document.getElementById('ctCustomer').value = c.customer;
+  document.getElementById('ctWhat').value = c.what;
+  document.getElementById('ctAmount').value = c.amount;
+  document.getElementById('ctBilling').value = c.billing;
+  document.getElementById('ctStatus').value = c.status;
+  document.getElementById('ctStart').value = c.start || '';
+  document.getElementById('ctRenew').value = c.renew || '';
+  document.getElementById('ctWeb').value = c.web || '';
+  document.getElementById('ctDrive').value = c.drive || '';
+  document.getElementById('ctNotes').value = c.notes || '';
+  document.getElementById('ctSaveBtn').textContent = 'Save changes';
+  document.getElementById('ctForm').style.display = '';
+}
+async function addContract(){
+  var cust = document.getElementById('ctCustomer').value;
+  var what = document.getElementById('ctWhat').value.trim();
+  var amount = Number(document.getElementById('ctAmount').value || 0);
+  if (!what) { alert('Say what was agreed first.'); return; }
+  var rec = {lead_id: leadIdByName(cust), customer:cust, what:what, amount:amount,
+    billing:document.getElementById('ctBilling').value, status:document.getElementById('ctStatus').value,
+    start_date:document.getElementById('ctStart').value || null, renew_date:document.getElementById('ctRenew').value || null,
+    web:document.getElementById('ctWeb').value.trim(), drive:document.getElementById('ctDrive').value.trim(),
+    notes:document.getElementById('ctNotes').value.trim()};
+  if (editingCt) {
+    var res = await sb.from('contracts').update(rec).eq('id', editingCt);
+    if (res.error) { toast('Could not save — ' + (res.error.message || 'check your connection and try again.'), true); return; }
+    var c = state.contracts.find(function(x){ return x.id === editingCt; });
+    if (c) { c.leadId = rec.lead_id; c.customer = rec.customer; c.what = rec.what; c.amount = rec.amount; c.billing = rec.billing; c.status = rec.status; c.start = rec.start_date || ''; c.renew = rec.renew_date || ''; c.web = rec.web; c.drive = rec.drive; c.notes = rec.notes; }
+    editingCt = null;
+    document.getElementById('ctSaveBtn').textContent = 'Save contract';
+  } else {
+    var ins = await sb.from('contracts').insert(rec).select();
+    if (ins.error || !ins.data || !ins.data.length) { toast('Could not save — ' + ((ins.error && ins.error.message) || 'check your connection and try again.'), true); return; }
+    state.contracts.unshift(mapContract(ins.data[0]));
+  }
+  // A contract means the client booked — mark their lead as Booked on the Leads page.
+  var lead = state.leads.find(function(x){ return x.name === cust; });
+  if (lead && lead.status !== 'booked') {
+    lead.status = 'booked'; lead.bookedAt = new Date().toISOString().slice(0,10);
+    await sb.from('leads').update({status:'booked', booked_at: lead.bookedAt}).eq('id', lead.id);
+    renderLeads();
+  }
+  ['ctWhat','ctAmount','ctStart','ctRenew','ctWeb','ctDrive','ctNotes'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('ctForm').style.display='none';
+  renderFb();
+  toast('Saved ✓');
+}
+async function delContract(id){
+  if (!confirm('Delete this contract?')) return;
+  var res = await sb.from('contracts').delete().eq('id', id);
+  if (res.error) { toast('Could not delete — ' + (res.error.message || 'check your connection and try again.'), true); return; }
+  state.contracts = state.contracts.filter(function(x){ return x.id !== id; });
+  renderFb();
+  toast('Deleted.');
+}
+
+/* ---- Add a lead: manual entry + CSV import (save to Supabase) ---- */
+async function addLeadManual(){
+  var err = document.getElementById('mnErr');
+  var name = document.getElementById('mnName').value.trim();
+  if (!name) { err.textContent = 'Enter the business name first.'; return; }
+  if (state.leads.some(function(l){ return normName(l.name)===normName(name); })) { err.textContent = 'A lead with this name is already in the tracker.'; return; }
+  var email = document.getElementById('mnEmail').value.trim();
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { err.textContent = 'That email doesn\u2019t look right.'; return; }
+  var scoreRaw = document.getElementById('mnScore').value.trim();
+  var score = null;
+  if (scoreRaw !== '') { score = Number(scoreRaw); if (isNaN(score) || score < 0 || score > 10) { err.textContent = 'Score must be between 0 and 10.'; return; } }
+  var maxId = Math.max.apply(null, state.leads.map(function(l){ return l.id; }));
+  var row = {id:maxId+1, rank:0, name:name,
+    industry:document.getElementById('mnIndustry').value.trim(),
+    city:document.getElementById('mnCity').value.trim(),
+    website:document.getElementById('mnWebsite').value.trim(),
+    social:document.getElementById('mnSocial').value.trim(),
+    phone:document.getElementById('mnPhone').value.trim(),
+    email:email,
+    problem:document.getElementById('mnProblem').value.trim(),
+    solution:document.getElementById('mnSolution').value.trim(),
+    score:score,
+    contact:document.getElementById('mnContact').value.trim(),
+    status:'new', built_at:null, contacted_at:null, booked_at:null};
+  var res = await sb.from('leads').insert(row).select();
+  if (res.error || !res.data || !res.data.length) { err.textContent = 'Could not save — ' + ((res.error && res.error.message) || 'check your connection and try again.'); return; }
+  state.leads.push(mapLead(res.data[0]));
+  sortLeads();
+  var rerr = await persistRanks();
+  if (rerr) { toast('Lead added, but the order may not be saved — try again.', true); }
+  closeManual(); renderLeads();
+  alert('Lead added as Not contacted.');
+}
+async function confirmImport(){
+  var header = importRows[0], data = importRows.slice(1);
+  var maxId = Math.max.apply(null, state.leads.map(function(l){return l.id}));
+  var maxRank = Math.max.apply(null, state.leads.map(function(l){return l.rank}));
+  var rows = [];
+  data.forEach(function(r){
+    var obj = {}; header.forEach(function(h,i){ var f=importMap[i]; if (f) obj[f]=r[i]; });
+    if (validateRow(obj)) return;
+    if (obj.name && state.leads.some(function(l){ return normName(l.name)===normName(obj.name); })) return;
+    maxId++; maxRank++;
+    rows.push({id:maxId, rank:maxRank, name:String(obj.name).trim(), industry:obj.industry||'', city:obj.city||'',
+      website:obj.website||'No website — not recorded', social:obj.social||'Not recorded', phone:obj.phone||'', email:obj.email||'',
+      problem:obj.problem||'', solution:obj.solution||'', score:(obj.score==null||obj.score===''?0:Number(obj.score)),
+      contact:obj.contact||'', status:'new', built_at:null, contacted_at:null, booked_at:null});
+  });
+  if (!rows.length) { closeImport(); return; }
+  var res = await sb.from('leads').insert(rows).select();
+  if (res.error) { alert('Could not import — ' + (res.error.message || 'check your connection and try again.')); return; }
+  res.data.forEach(function(r){ state.leads.push(mapLead(r)); });
+  sortLeads();
+  await persistRanks();
+  closeImport(); renderLeads();
+  alert(rows.length + ' lead' + (rows.length===1?'':'s') + ' imported as Not contacted.');
+}
+
+/* ---- Start: check the saved Supabase login, then load the data ---- */
+if (!window.supabase) {
+  document.getElementById('loginErr').textContent = 'Could not reach Supabase — check your internet connection and reload the page.';
+} else {
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  sb.auth.getSession().then(function(res){
+    if (res.data && res.data.session) { showApp(); loadData(); }
+  });
+}
+
+/* ---- Kept exactly as the hosted copy (same look, same filters) ---- */
+var MAIN_CITIES = [['accra','Accra'],['tamale','Tamale'],['takoradi','Takoradi'],['sekondi','Takoradi'],['kumasi','Kumasi'],['tema','Tema'],['cape coast','Cape Coast'],['sunyani','Sunyani'],['tarkwa','Tarkwa'],['kasoa','Kasoa'],['elmina','Elmina'],['akim oda','Akim Oda'],['bunso','Bunso'],['sogakope','Sogakope'],['nsawam','Nsawam'],['biriwa','Biriwa'],['beyin','Beyin'],['abuesi','Takoradi'],['shama','Takoradi'],['anaji','Takoradi'],['nsuta','Tarkwa'],['ejisu','Kumasi'],['madina','Accra'],['adenta','Accra'],['agbogba','Accra'],['ogbojo','Accra'],['ablekuma','Accra'],['bolgatanga','Bolgatanga'],['sewfi','Sefwi-Asawinso'],['kintampo','Kintampo'],['obuasi','Obuasi'],['asamankese','Asamankese'],['akuse','Akuse'],['ewoyaa','Ewoyaa'],['nkwatia','Nkwatia'],['gomoa','Gomoa'],['aflao','Aflao'],['dodowa','Dodowa'],['agona swedru','Agona Swedru'],['upper east','Upper East Region'],['upper west','Upper West Region'],['western north','Western North Region'],['bono east','Bono East Region'],['north east','North East Region'],['savannah','Savannah Region'],['north tongu','Volta Region'],['central region','Cape Coast'],['ahafo','Ahafo Region'],['volta','Volta Region'],['oti','Oti Region'],['bono','Sunyani'],['ashanti','Kumasi']];
+var REGION_FOLD = {'Tema':'Accra','Kasoa':'Accra','Tarkwa':'Takoradi','Beyin':'Takoradi','Biriwa':'Cape Coast','Elmina':'Cape Coast','Akim Oda':'Eastern Region','Nsawam':'Eastern Region','Bunso':'Eastern Region','Sogakope':'Volta Region','Bolgatanga':'Upper East Region','Sefwi-Asawinso':'Western North Region','Kintampo':'Bono East Region','Obuasi':'Kumasi','Asamankese':'Eastern Region','Akuse':'Eastern Region','Ewoyaa':'Cape Coast','Nkwatia':'Eastern Region','Gomoa':'Cape Coast','Aflao':'Volta Region','Dodowa':'Accra','Agona Swedru':'Cape Coast'};
+var KIND_IDS = { trade: ['tradeInput','tradeList','tradeClear'], city: ['cityInput','cityList','cityClear'], website: ['webInput','webList','webClear'], newly: ['newInput','newList','newClear'] };
+var ALL_LABELS = { trade: 'All niches', city: 'All cities', website: 'All websites', newly: 'All businesses' };
+var comboState = { trade: { exact: '', text: '' }, city: { exact: '', text: '' }, website: { exact: '', text: '' }, newly: { exact: '', text: '' } };
+var FIELDS = ['name','industry','city','website','social','phone','email','problem','solution','score','contact'];
+var FIELD_LABELS = {name:'Business name', industry:'Industry', city:'City', website:'Website condition', social:'Social presence', phone:'Phone', email:'Email', problem:'Problem spotted', solution:'Recommended solution', score:'Score', contact:'Best contact'};
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function normName(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
+function fmtMoney(n){ return Number(n||0).toLocaleString('en-GH'); }
+function fillCustomers(){
+  var names = state.leads.map(function(l){return l.name}).sort();
+  ['fbCustomer','fbAddCustomer','ctCustomer'].forEach(function(id){
+    var el = document.getElementById(id);
+    var cur = el.value;
+    var opts = id==='fbCustomer' ? '<option value="">All customers</option>' : '';
+    el.innerHTML = opts + names.map(function(n){ return '<option value="'+esc(n)+'">'+esc(n)+'</option>'; }).join('');
+    if (cur && names.indexOf(cur) !== -1) el.value = cur;
+  });
+}
+function showTab(which){
+  document.getElementById('pageLeads').style.display = which==='leads' ? '' : 'none';
+  document.getElementById('pageFb').style.display = which==='fb' ? '' : 'none';
+  document.getElementById('tabLeads').className = which==='leads' ? 'active' : '';
+  document.getElementById('tabFb').className = which==='fb' ? 'active' : '';
+  if (which==='fb') renderFb();
+}
+function statusLabel(s){
+  return {new:'Not contacted', built:'Site built', contacted:'Contacted', booked:'Booked', noreply:'No reply', declined:'Declined', notavailable:'Not available'}[s] || s;
+}
+function statusPill(s){
+  return '<span class="pill '+s+'">'+statusLabel(s)+'</span>';
+}
+function setFilter(f, btn){
+  statusFilter = f;
+  document.querySelectorAll('#pills button').forEach(function(b){ b.className = b === btn ? 'active' : ''; });
+  renderLeads();
+}
+function firstPhoneIntl(phone){
+  var first = (phone || '').split(/[/;]/)[0] || '';
+  var digits = first.replace(/\D/g, '');
+  if (digits.indexOf('233') === 0) return digits;
+  if (digits.charAt(0) === '0') return '233' + digits.slice(1);
+  return digits;
+}
+function mainCity(city){
+  var low = (city || '').toLowerCase();
+  var best = null, bestPos = 1e9;
+  MAIN_CITIES.forEach(function(pair){ var p = low.indexOf(pair[0]); if (p !== -1 && p < bestPos) { bestPos = p; best = pair[1]; } });
+  if (best) return best;
+  return 'Other regions';
+}
+function regionCity(city){
+  var m = mainCity(city);
+  return REGION_FOLD[m] || m;
+}
+function websiteCategory(w){
+  var t = (w || '').toLowerCase();
+  if (t.indexOf('firewall') !== -1 || t.indexOf('blocks visitors') !== -1 || t.indexOf('unauthorized access') !== -1
+      || /http (403|404|500|502)/.test(t) || /returns 40[34]/.test(t) || t.indexOf(' 403') !== -1 || t.indexOf(' 502') !== -1
+      || (t.indexOf('blank') !== -1 && t.indexOf('shell') !== -1)) return "Doesn't load";
+  if (/does not (resolve|load)/.test(t) || /did not (resolve|load)/.test(t) || /fail\w* to (resolve|connect|load)/.test(t)
+      || t.indexOf('dns') !== -1 || t.indexOf('unresolvable') !== -1 || t.indexOf('connection failure') !== -1
+      || t.replace(/^\s+/, '').indexOf('dead') === 0) return 'Dead';
+  if (t.indexOf('parked') !== -1 || t.indexOf('for sale') !== -1 || t.indexOf('placeholder') !== -1
+      || t.indexOf('loads a different') !== -1 || t.indexOf('loads tri-city') !== -1 || t.indexOf('wrong:') !== -1
+      || t.indexOf('stale') !== -1 || t.indexOf('outdated') !== -1 || t.indexOf('flawed') !== -1 || t.indexOf('weak') !== -1
+      || t.indexOf('loads but broken') !== -1 || t.indexOf('broken content') !== -1) return 'Broken';
+  return 'No website';
+}
+function generalNiche(ind){
+  var s = (ind || '').replace(/\s+$/, '').replace(/\.$/, '');
+  var t = s.toLowerCase();
+  var rules = [
+    ['real estate','Real estate'], ['property','Real estate'],
+    ['beach resort','Hotels'], ['hotel','Hotels'], ['lodge','Hotels'],
+    ['hospital','Hospitals'], ['clinic','Hospitals'], ['medical centre','Hospitals'],
+    ['mining','Mining'], ['quarry','Mining'], ['explosives','Mining'], ['gold mine','Mining'],
+    ['solar','Solar'], ['power systems','Solar'], ['power equipment','Solar'],
+    ['construction','Construction'],
+    ['pharma','Pharma'], ['pharmacy','Pharma'], ['vaccine','Pharma'], ['sterile','Pharma'], ['chemist','Pharma'],
+    ['university','Education'], ['college','Education'], ['school','Education'], ['nursing training','Education'], ['institute','Education'],
+    ['freight','Logistics'], ['logistics','Logistics'], ['courier','Logistics'], ['customs house','Logistics'],
+    ['insurance','Insurance'], ['insurtech','Insurance'], ['reinsurance','Insurance'],
+    ['auto dealership','Auto dealerships'],
+    ['event centre','Event centres'],
+    ['beauty','Beauty & spa'],
+    ['restaurant','Restaurants'],
+    ['engineering','Engineering'],
+    ['gym','Gym & fitness']
+  ];
+  for (var i = 0; i < rules.length; i++) { if (t.indexOf(rules[i][0]) !== -1) return rules[i][1]; }
+  return s.split(/\s*\(| \/ | — |, /)[0].replace(/\.$/, '') || s;
+}
+function isNewlyBuilt(l){
+  var t = ((l.problem || '') + ' ' + (l.solution || '')).toLowerCase();
+  return /brand-new|newly opened|newly built|commissioned|began operations|operations from|opened (in )?(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]* 202[56]|launched (in )?202[56]/.test(t);
+}
+function comboInput(kind){ return document.getElementById(KIND_IDS[kind][0]); }
+function comboListEl(kind){ return document.getElementById(KIND_IDS[kind][1]); }
+function comboOptions(kind){
+  var counts = {};
+  state.leads.forEach(function(l){
+    var v;
+    if (kind === 'trade') v = generalNiche(l.industry);
+    else if (kind === 'city') v = regionCity(l.city);
+    else if (kind === 'website') v = websiteCategory(l.website);
+    else if (kind === 'newly') v = isNewlyBuilt(l) ? 'Newly built' : null;
+    if (v) counts[v] = (counts[v]||0)+1;
+  });
+  return Object.keys(counts).sort().map(function(v){ return { label: v, count: counts[v] }; });
+}
+function renderComboList(kind){
+  var input = comboInput(kind);
+  var list = comboListEl(kind);
+  var q = (input.value || '').trim().toLowerCase();
+  var opts = comboOptions(kind).filter(function(o){ return !q || o.label.toLowerCase().indexOf(q) !== -1; });
+  var html = '<div class="combo-opt all" onclick="pickCombo(\''+kind+'\', \'\')">'+ALL_LABELS[kind]+'</div>';
+  if (opts.length) {
+    html += opts.map(function(o){ return '<div class="combo-opt" onclick="pickCombo(\''+kind+'\', decodeURIComponent(\''+encodeURIComponent(o.label)+'\'))">'+esc(o.label)+' ('+o.count+')</div>'; }).join('');
+  } else {
+    html += '<div class="combo-opt none">No match here — leads below are matched by business name</div>';
+  }
+  list.innerHTML = html;
+}
+function openCombo(kind){
+  closeCombos(kind);
+  renderComboList(kind);
+  comboListEl(kind).classList.add('open');
+}
+function closeCombos(except){
+  Object.keys(KIND_IDS).forEach(function(k){
+    if (k !== except) comboListEl(k).classList.remove('open');
+  });
+}
+function onComboInput(kind){
+  var input = comboInput(kind);
+  var st = comboState[kind];
+  st.exact = '';
+  st.text = input.value.trim();
+  renderComboList(kind);
+  comboListEl(kind).classList.add('open');
+  renderLeads();
+}
+function pickCombo(kind, value){
+  var input = comboInput(kind);
+  var st = comboState[kind];
+  st.exact = value;
+  st.text = '';
+  input.value = value;
+  closeCombos();
+  renderLeads();
+}
+function syncClear(kind){
+  var input = comboInput(kind);
+  var st = comboState[kind];
+  var el = document.getElementById(KIND_IDS[kind][2]);
+  if (el) el.classList.toggle('show', !!(input.value || st.exact || st.text));
+}
+function clearCombo(kind){
+  comboState[kind] = {exact:'', text:''};
+  comboInput(kind).value = '';
+  closeCombos();
+  renderLeads();
+}
+function filteredLeads(){
+  var t = comboState.trade, c = comboState.city, w = comboState.website, n = comboState.newly;
+  return state.leads.filter(function(l){
+    if (statusFilter && l.status !== statusFilter) return false;
+    if (t.exact) { if (generalNiche(l.industry) !== t.exact) return false; }
+    else if (t.text) {
+      var q = t.text.toLowerCase();
+      if (generalNiche(l.industry).toLowerCase().indexOf(q) === -1 && (l.industry||'').toLowerCase().indexOf(q) === -1 && (l.name||'').toLowerCase().indexOf(q) === -1) return false;
+    }
+    if (c.exact) { if (regionCity(l.city) !== c.exact) return false; }
+    else if (c.text) {
+      var q2 = c.text.toLowerCase();
+      if (regionCity(l.city).toLowerCase().indexOf(q2) === -1 && (l.city||'').toLowerCase().indexOf(q2) === -1 && (l.name||'').toLowerCase().indexOf(q2) === -1) return false;
+    }
+    if (w.exact) { if (websiteCategory(l.website) !== w.exact) return false; }
+    else if (w.text) {
+      var q3 = w.text.toLowerCase();
+      if (websiteCategory(l.website).toLowerCase().indexOf(q3) === -1 && (l.name||'').toLowerCase().indexOf(q3) === -1 && (l.website||'').toLowerCase().indexOf(q3) === -1) return false;
+    }
+    if (n.exact) { if (!isNewlyBuilt(l)) return false; }
+    else if (n.text) {
+      var q4 = n.text.toLowerCase();
+      if (!(isNewlyBuilt(l) && 'newly built'.indexOf(q4) !== -1) && (l.name||'').toLowerCase().indexOf(q4) === -1) return false;
+    }
+    return true;
+  });
+}
+function renderLeads(){
+  Object.keys(comboState).forEach(function(kind){
+    var st = comboState[kind];
+    if (st.exact && comboOptions(kind).every(function(o){ return o.label !== st.exact; })) {
+      st.exact = '';
+      comboInput(kind).value = '';
+    }
+  });
+  var c = {new:0, built:0, contacted:0, booked:0};
+  state.leads.forEach(function(l){ c[l.status] = (c[l.status]||0)+1; });
+  var total = state.leads.length;
+  document.querySelectorAll('.tot').forEach(function(el){ el.textContent = total; });
+  document.getElementById('stResearched').textContent = total;
+  document.getElementById('stBuilt').textContent = c.built||0;
+  document.getElementById('stContacted').textContent = c.contacted||0;
+  document.getElementById('stBooked').textContent = c.booked||0;
+  document.getElementById('pcNew').textContent = c.new||0;
+  document.getElementById('pcBuilt').textContent = c.built||0;
+  document.getElementById('pcContacted').textContent = c.contacted||0;
+  document.getElementById('pcBooked').textContent = c.booked||0;
+  document.getElementById('pcNoreply').textContent = c.noreply||0;
+  document.getElementById('pcDeclined').textContent = c.declined||0;
+  document.getElementById('pcNotavail').textContent = c.notavailable||0;
+  var list = filteredLeads();
+  document.getElementById('count').textContent = list.length + ' of ' + total + ' leads';
+  var html = '';
+  list.forEach(function(l){
+    var intl = firstPhoneIntl(l.phone);
+    var meta = [l.industry, l.city].filter(function(x){ return x; }).join(' · ') || '—';
+    var scoreHtml = (l.score==null || l.score==='') ? 'Score <b>—</b>' : 'Score <b>'+l.score+'/10</b>';
+    html += '<div class="lead-card">'
+      + '<div class="lead-top"><div><span class="lead-rank">'+l.rank+'</span><span class="lead-name" onclick="toggleDetail('+l.id+')">'+esc(l.name)+'</span><div class="lead-meta">'+esc(meta)+'</div></div>'
+      + '<div><div style="text-align:right">'+statusPill(l.status)+'</div><div class="lead-score" style="margin-top:6px">'+scoreHtml+'</div></div></div>'
+      + '<div class="lead-web"><b>Website:</b> '+esc(l.website||'—')+'</div>'
+      + '<div class="lead-btns"><button class="'+(l.status==='built'?'on-built':'')+'" onclick="setStatus('+l.id+',\'built\')">Site built</button><button class="'+(l.status==='contacted'?'on-contacted':'')+'" onclick="setStatus('+l.id+',\'contacted\')">Contacted</button><button class="'+(l.status==='booked'?'on-booked':'')+'" onclick="setStatus('+l.id+',\'booked\')">Booked</button></div>'
+      + '<div class="lead-plain"><span class="plain-opt'+(l.status==='noreply'?' on-noreply':'')+'" onclick="setStatus('+l.id+',\'noreply\')">No reply</span><span class="plain-opt'+(l.status==='declined'?' on-declined':'')+'" onclick="setStatus('+l.id+',\'declined\')">Declined</span><span class="plain-opt'+(l.status==='notavailable'?' on-notavailable':'')+'" onclick="setStatus('+l.id+',\'notavailable\')">Not available</span></div>'
+      + '<div><span class="lead-detail-toggle" id="tgl'+l.id+'" onclick="toggleDetail('+l.id+')">Problem, solution &amp; contact ▾</span></div>'
+      + '<div class="lead-detail" id="d'+l.id+'" style="display:none">'
+      + '<p><b>Problem spotted:</b> '+esc(l.problem||'—')+'</p>'
+      + "<p><b>What you'll build:</b> "+esc(l.solution||'—')+'</p>'
+      + '<p><b>Social:</b> '+esc(l.social||'—')+'</p>'
+      + '<p><b>Best contact:</b> '+esc(l.contact||'—')+'</p>'
+      + '<p><b>Phone:</b> '+esc(l.phone||'—')+(l.email ? ' · <b>Email:</b> '+esc(l.email) : '')+'</p>'
+      + '<div class="lead-action-btns">'
+      + (intl ? '<a class="btn-wa" target="_blank" rel="noreferrer" href="https://wa.me/'+intl+'">WhatsApp</a>' : '')
+      + (intl ? '<a class="btn-line" href="tel:+'+intl+'">Call</a>' : '')
+      + (l.email ? '<a class="btn-line" href="mailto:'+esc(l.email)+'">Email</a>' : '')
+      + '<a class="btn-line" target="_blank" rel="noreferrer" href="https://www.google.com/maps/search/'+encodeURIComponent(l.name+' '+l.city+' Ghana')+'">Map</a>'
+      + '</div></div>'
+      + '</div>';
+  });
+  document.getElementById('cards').innerHTML = html || '<div class="empty-card">No leads match your search.</div>';
+  Object.keys(KIND_IDS).forEach(syncClear);
+  fillCustomers();
+}
+function toggleForm(id){ var el=document.getElementById(id); el.style.display = el.style.display==='none' ? '' : 'none'; }
+function toggleDetail(id){ var el=document.getElementById('d'+id); var open = el.style.display==='none'; el.style.display = open ? '' : 'none'; var tg=document.getElementById('tgl'+id); if (tg) tg.textContent = open ? 'Hide details ▴' : 'Problem, solution & contact ▾'; }
+function downloadCSV(){
+  var list = filteredLeads();
+  function q(v){ return '"'+String(v==null?'':v).replace(/"/g,'""')+'"'; }
+  var lines = [['Rank','Business','Industry','City','Website condition','Social presence','Phone','Email','Problem','Solution','Score','Best contact','Status'].map(q).join(',')];
+  list.forEach(function(l){ lines.push([l.rank,l.name,l.industry,l.city,l.website,l.social,l.phone,l.email,l.problem,l.solution,l.score,l.contact,statusLabel(l.status)].map(q).join(',')); });
+  var blob = new Blob([lines.join('\n')], {type:'text/csv'});
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'ghana-website-leads.csv'; a.click();
+}
+function parseCSV(text){
+  var rows=[], row=[], cur='', inQ=false;
+  for (var i=0;i<text.length;i++){
+    var ch=text[i];
+    if (inQ){ if (ch==='"'){ if (text[i+1]==='"'){ cur+='"'; i++; } else inQ=false; } else cur+=ch; }
+    else if (ch==='"') inQ=true;
+    else if (ch===','){ row.push(cur); cur=''; }
+    else if (ch==='\n' || ch==='\r'){ if (ch==='\r' && text[i+1]==='\n') i++; row.push(cur); cur=''; if (row.length>1 || row[0]!=='') rows.push(row); row=[]; }
+    else cur+=ch;
+  }
+  if (cur!=='' || row.length){ row.push(cur); rows.push(row); }
+  return rows.filter(function(r){ return r.some(function(c){ return String(c).trim()!==''; }); });
+}
+function autoMap(header){
+  var map = {};
+  var keys = Object.keys(FIELD_LABELS);
+  header.forEach(function(h, i){
+    var hn = String(h).toLowerCase();
+    var best = '';
+    keys.forEach(function(k){
+      if (hn.indexOf(k) !== -1 || FIELD_LABELS[k].toLowerCase().indexOf(hn) !== -1) best = k;
+    });
+    if (hn.indexOf('business')!==-1 || hn==='name') best='name';
+    if (hn.indexOf('website')!==-1) best='website';
+    if (hn.indexOf('phone')!==-1) best='phone';
+    if (hn.indexOf('email')!==-1 || hn.indexOf('mail')!==-1) best='email';
+    if (hn.indexOf('score')!==-1) best='score';
+    if (hn.indexOf('contact')!==-1) best='contact';
+    if (hn.indexOf('problem')!==-1) best='problem';
+    if (hn.indexOf('solution')!==-1) best='solution';
+    if (hn.indexOf('social')!==-1) best='social';
+    if (hn.indexOf('industry')!==-1 || hn.indexOf('trade')!==-1) best='industry';
+    if (hn.indexOf('city')!==-1) best='city';
+    map[i] = best;
+  });
+  return map;
+}
+function validateRow(obj){
+  if (!obj.name || !String(obj.name).trim()) return 'Missing name';
+  if (obj.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(obj.email).trim())) return 'Bad email';
+  if (obj.score !== '' && obj.score != null) { var s = Number(obj.score); if (isNaN(s) || s < 0 || s > 10) return 'Score outside 0–10'; }
+  return '';
+}
+function renderImportPreview(){
+  var header = importRows[0], data = importRows.slice(1);
+  var html = '<p>Match your columns to the lead fields, then review every row before anything is saved.</p>';
+  html += '<table><thead><tr><th>Your column</th><th>Maps to</th></tr></thead><tbody>';
+  header.forEach(function(h, i){
+    html += '<tr><td>'+esc(h)+'</td><td><select data-col="'+i+'" onchange="importMap[this.dataset.col]=this.value; renderImportPreview();">';
+    html += '<option value="">— ignore —</option>';
+    FIELDS.forEach(function(f){ html += '<option value="'+f+'"'+(importMap[i]===f?' selected':'')+'>'+FIELD_LABELS[f]+'</option>'; });
+    html += '</select></td></tr>';
+  });
+  html += '</tbody></table>';
+  html += '<h3 style="margin:16px 0 8px; color:#fff">Preview — first 10 rows</h3><table><thead><tr><th>Business</th><th>Score</th><th>Result</th></tr></thead><tbody>';
+  data.slice(0,10).forEach(function(r){
+    var obj = {}; header.forEach(function(h,i){ var f=importMap[i]; if (f) obj[f]=r[i]; });
+    var err = validateRow(obj);
+    var isDup = obj.name && state.leads.some(function(l){ return normName(l.name)===normName(obj.name); });
+    var res;
+    if (err) { res = '<span class="bad">Invalid — '+esc(err)+'</span>'; }
+    else if (isDup) { res = '<span class="bad">Duplicate — already in the tracker</span>'; }
+    else { res = '<span class="ok">Ready to import</span>'; }
+    html += '<tr><td>'+esc(obj.name||'(no name)')+'</td><td>'+esc(obj.score==null?'':obj.score)+'</td><td>'+res+'</td></tr>';
+  });
+  html += '</tbody></table>';
+  var totalOk = 0, totalDup = 0, totalBad = 0;
+  data.forEach(function(r){
+    var obj = {}; header.forEach(function(h,i){ var f=importMap[i]; if (f) obj[f]=r[i]; });
+    if (validateRow(obj)) totalBad++;
+    else if (obj.name && state.leads.some(function(l){ return normName(l.name)===normName(obj.name); })) totalDup++;
+    else totalOk++;
+  });
+  html += '<p><b>'+totalOk+' ready</b> · '+totalDup+' duplicates · '+totalBad+' invalid, out of '+data.length+' rows.</p>';
+  document.getElementById('importBody').innerHTML = html;
+  document.getElementById('confirmImportBtn').disabled = totalOk === 0;
+  document.getElementById('confirmImportBtn').textContent = 'Confirm import ('+totalOk+' leads)';
+}
+function scrollPageToTop(){
+  var opts = {top:0, behavior:'smooth'};
+  try { window.scrollTo(opts); } catch(e){ window.scrollTo(0,0); }
+  try { document.documentElement.scrollTo(opts); } catch(e){}
+  try { document.body.scrollTo(opts); } catch(e){}
+}
+function sortLeads(){
+  state.leads.sort(function(a,b){ return (b.score==null?0:b.score) - (a.score==null?0:a.score); });
+  state.leads.forEach(function(l,i){ l.rank = i+1; });
+}
+function openImportChoice(){ document.getElementById('choiceModal').classList.add('open'); }
+function closeChoice(){ document.getElementById('choiceModal').classList.remove('open'); }
+function openManual(){ ['mnName','mnIndustry','mnCity','mnWebsite','mnSocial','mnPhone','mnEmail','mnProblem','mnSolution','mnScore','mnContact'].forEach(function(id){ document.getElementById(id).value=''; }); document.getElementById('mnErr').textContent=''; document.getElementById('manualModal').classList.add('open'); }
+function closeManual(){ document.getElementById('manualModal').classList.remove('open'); }
+function onImportFile(ev){
+  var file = ev.target.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(){
+    var rows = parseCSV(String(reader.result||''));
+    if (rows.length < 2) { alert('That file has no data rows.'); return; }
+    importRows = rows;
+    importMap = autoMap(rows[0]);
+    renderImportPreview();
+    document.getElementById('importModal').classList.add('open');
+  };
+  reader.readAsText(file);
+  ev.target.value='';
+}
+function closeImport(){ document.getElementById('importModal').classList.remove('open'); importRows=null; }
+
+document.addEventListener('click', function(e){ if (!e.target.closest('.combo')) closeCombos(); });
+document.addEventListener('scroll', function(){
+  var y = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+  var b = document.getElementById('backTop');
+  if (b) b.classList.toggle('show', y > 160);
+}, true);
+</script>
+<button class="back-top" id="backTop" onclick="scrollPageToTop()" title="Back to top">↑</button>
+<div id="saveToast"></div>
+</body>
+</html>
