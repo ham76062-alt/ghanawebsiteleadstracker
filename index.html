@@ -416,7 +416,7 @@ td .sub { color: #94a198; font-size: 12px; }
 var SUPABASE_URL = 'https://vukwidadaixetvoylroz.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_palBv4WswtwJ-HUfZEPqNw__4WqqeBE';
 var sb = null;
-var state = { leads: [], feedback: [], contracts: [], users: [] };
+var state = { leads: [], leadState: {}, feedback: [], contracts: [], users: [] };
 var statusFilter = '';
 var importRows = null, importMap = null;
 var editingFb = null, editingCt = null;
@@ -593,9 +593,31 @@ async function doNewPass(){
   setLoginMsg('loginOk', 'Password changed. Log in with your new password.', true);
 }
 
-/* Supabase stores columns with underscores; the app uses camelCase. */
+/* The leads table is the shared catalogue. Your own marks (status, notes,
+   dates, business type) live in lead_state and are merged in loadData,
+   so each user only ever sees their own work on a lead. */
 function mapLead(r){
-  return {id:r.id, rank:r.rank, name:r.name, industry:r.industry||'', city:r.city||'', website:r.website||'', social:r.social||'', phone:r.phone||'', email:r.email||'', problem:r.problem||'', solution:r.solution||'', score:r.score, contact:r.contact||'', notes:r.notes||'', businessType:r.business_type||'local', followUpDate:r.follow_up_date||'', contactDate:r.contact_date||'', status:r.status||'new', builtAt:r.built_at||null, contactedAt:r.contacted_at||null, bookedAt:r.booked_at||null};
+  return {id:r.id, rank:r.rank, name:r.name, industry:r.industry||'', city:r.city||'', website:r.website||'', social:r.social||'', phone:r.phone||'', email:r.email||'', problem:r.problem||'', solution:r.solution||'', score:r.score, contact:r.contact||'', notes:'', businessType:'local', followUpDate:'', contactDate:'', status:'new'};
+}
+function mapState(r){
+  return {leadId:r.lead_id, status:r.status||'new', notes:r.notes||'', businessType:r.business_type||'local', followUpDate:r.follow_up_date||'', contactDate:r.contact_date||''};
+}
+var STATE_KEYS = {status:'status', notes:'notes', businessType:'business_type', followUpDate:'follow_up_date', contactDate:'contact_date'};
+/* One write path for your own marks: upsert into lead_state, so the
+   shared leads table is never touched by a mark. */
+async function saveState(id, patch){
+  var row = {user_id: currentUser.id, lead_id: id, updated_at: new Date().toISOString()};
+  Object.keys(patch).forEach(function(k){
+    var v = patch[k];
+    if ((k === 'followUpDate' || k === 'contactDate') && v === '') v = null;
+    row[STATE_KEYS[k] || k] = v;
+  });
+  var res = await sb.from('lead_state').upsert(row, {onConflict: 'user_id,lead_id'});
+  if (res.error) return res.error;
+  var cur = state.leadState[id] || {status:'new', notes:'', businessType:'local', followUpDate:'', contactDate:''};
+  Object.keys(patch).forEach(function(k){ cur[k] = patch[k]; });
+  state.leadState[id] = cur;
+  return null;
 }
 function mapFeedback(r){
   return {id:r.id, leadId:r.lead_id, customer:r.customer, text:r.text, changes:r.changes||'', date:r.date||''};
@@ -610,10 +632,18 @@ async function loadData(){
   document.getElementById('cards').innerHTML = '<div class="empty-card">Loading your leads…</div>';
   var lr = await sb.from('leads').select('*').order('rank', {ascending:true});
   if (lr.error) { showLoadError(lr.error.message || 'The leads table could not be read. Did you run schema.sql and seed.sql in Supabase?'); return; }
+  var sr = await sb.from('lead_state').select('*');
+  if (sr.error) { showLoadError('Your own marks could not be read — ' + (sr.error.message || '') + ' Did you run migration-05.sql in Supabase?'); return; }
   var fr = await sb.from('feedback').select('*').order('created_at', {ascending:false});
   var cr = await sb.from('contracts').select('*').order('created_at', {ascending:false});
   if (fr.error || cr.error) { showLoadError(((fr.error || cr.error).message) || 'Could not read feedback and contracts.'); return; }
+  state.leadState = {};
+  (sr.data || []).forEach(function(r){ var s = mapState(r); state.leadState[s.leadId] = s; });
   state.leads = lr.data.map(mapLead);
+  state.leads.forEach(function(l){
+    var s = state.leadState[l.id];
+    if (s) { l.status = s.status; l.notes = s.notes; l.businessType = s.businessType; l.followUpDate = s.followUpDate; l.contactDate = s.contactDate; }
+  });
   state.feedback = fr.data.map(mapFeedback);
   state.contracts = cr.data.map(mapContract);
   dataLoaded = true;
@@ -624,16 +654,13 @@ async function loadData(){
 async function setStatus(id, st){
   var l = state.leads.find(function(x){return x.id===id});
   if (!l || !dataLoaded) return;
-  var oldStatus = l.status, oldBuilt = l.builtAt, oldContacted = l.contactedAt, oldBooked = l.bookedAt;
+  var oldStatus = l.status;
   if (l.status === st) st = 'new';  // tapping the selected button again unselects it
   l.status = st;
-  var now = new Date().toISOString().slice(0,10);
-  if (st==='built') l.builtAt = now; else if (st==='contacted') l.contactedAt = now; else if (st==='booked') l.bookedAt = now;
-  if (st==='new') { l.builtAt=null; l.contactedAt=null; l.bookedAt=null; }
   renderLeads();
-  var res = await sb.from('leads').update({status: st, built_at: l.builtAt, contacted_at: l.contactedAt, booked_at: l.bookedAt}).eq('id', id);
-  if (res.error) {
-    l.status = oldStatus; l.builtAt = oldBuilt; l.contactedAt = oldContacted; l.bookedAt = oldBooked;
+  var err = await saveState(id, {status: st});
+  if (err) {
+    l.status = oldStatus;
     renderLeads();
     toast('Could not save — check your connection and try again.', true);
     return;
@@ -665,10 +692,10 @@ async function saveNote(id){
   if (!l) return;
   var old = l.notes;
   l.notes = text;
-  var res = await sb.from('leads').update({notes: text}).eq('id', id);
-  if (res.error) {
+  var err = await saveState(id, {notes: text});
+  if (err) {
     l.notes = old;
-    toast('Could not save the note — ' + (res.error.message || 'check your connection and try again.'), true);
+    toast('Could not save the note — ' + (err.message || 'check your connection and try again.'), true);
     return;
   }
   noteEditing = null;
@@ -681,8 +708,8 @@ async function setContactDate(id, val){
   var old = l.contactDate;
   l.contactDate = val || '';
   renderLeads();
-  var res = await sb.from('leads').update({contact_date: val || null}).eq('id', id);
-  if (res.error) {
+  var err = await saveState(id, {contactDate: val || ''});
+  if (err) {
     l.contactDate = old;
     renderLeads();
     toast('Could not save — check your connection and try again.', true);
@@ -714,6 +741,7 @@ async function confirmDeleteLead(){
     return;
   }
   state.leads = state.leads.filter(function(x){ return x.id !== id; });
+  delete state.leadState[id];
   closeDeleteModal();
   renderLeads();
   toast('Lead deleted.');
@@ -730,8 +758,8 @@ async function setFollowUpDate(id, val){
   var old = l.followUpDate;
   l.followUpDate = val || '';
   renderLeads();
-  var res = await sb.from('leads').update({follow_up_date: val || null}).eq('id', id);
-  if (res.error) {
+  var err = await saveState(id, {followUpDate: val || ''});
+  if (err) {
     l.followUpDate = old;
     renderLeads();
     toast('Could not save — check your connection and try again.', true);
@@ -746,16 +774,19 @@ async function persistRanks(){
   return res.error || null;
 }
 
+/* Reset clears ONLY your own data: your marks, notes and dates on every
+   lead, plus your feedback and contracts. The 310 businesses and other
+   users' work are never touched. */
 async function resetAll(){
-  if (!confirm('Reset everything back to the original 310 leads? Your marks, feedback and contracts on EVERY device will be cleared.')) return;
-  var r1 = await sb.from('feedback').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-  var r2 = await sb.from('contracts').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-  var r3 = await sb.from('leads').delete().gt('id', 1199);
-  var r4 = await sb.from('leads').update({status:'new', built_at:null, contacted_at:null, booked_at:null}).neq('id', 0);
-  var err = r1.error || r2.error || r3.error || r4.error;
+  if (!confirm('Reset your own data? Your marks, notes, dates, feedback and contracts will be cleared. The businesses and other users will not be affected.')) return;
+  var uid = currentUser ? currentUser.id : null;
+  var r1 = await sb.from('lead_state').delete().eq('user_id', uid);
+  var r2 = await sb.from('feedback').delete().eq('owner_id', uid);
+  var r3 = await sb.from('contracts').delete().eq('owner_id', uid);
+  var err = r1.error || r2.error || r3.error;
   if (err) { toast('Could not reset — ' + (err.message || 'check your connection and try again.'), true); return; }
   await loadData();
-  toast('Reset — back to the original 310 leads.');
+  toast('Your data has been reset.');
 }
 
 function leadIdByName(name){
@@ -839,14 +870,14 @@ function editFeedback(id){
 }
 async function saveFeedbackPart(cust, text, changes){
   if (editingFb) {
-    var res = await sb.from('feedback').update({lead_id: leadIdByName(cust), customer: cust, text: text, changes: changes}).eq('id', editingFb);
+    var res = await sb.from('feedback').update({lead_id: leadIdByName(cust), customer: cust, text: text, changes: changes, owner_id: currentUser.id}).eq('id', editingFb);
     if (res.error) { toast('Could not save — ' + (res.error.message || 'check your connection and try again.'), true); return false; }
     var f = state.feedback.find(function(x){ return x.id === editingFb; });
     if (f) { f.leadId = leadIdByName(cust); f.customer = cust; f.text = text; f.changes = changes; }
     editingFb = null;
   } else {
     var today = new Date().toISOString().slice(0,10);
-    var ins = await sb.from('feedback').insert({lead_id: leadIdByName(cust), customer: cust, text: text, changes: changes, date: today}).select();
+    var ins = await sb.from('feedback').insert({lead_id: leadIdByName(cust), customer: cust, text: text, changes: changes, date: today, owner_id: currentUser.id}).select();
     if (ins.error || !ins.data || !ins.data.length) { toast('Could not save — ' + ((ins.error && ins.error.message) || 'check your connection and try again.'), true); return false; }
     state.feedback.unshift(mapFeedback(ins.data[0]));
   }
@@ -880,7 +911,7 @@ function editContract(id){
 async function saveContractPart(cust){
   var what = document.getElementById('ctWhat').value.trim();
   var amount = Number(document.getElementById('ctAmount').value || 0);
-  var rec = {lead_id: leadIdByName(cust), customer:cust, what:what, amount:amount,
+  var rec = {lead_id: leadIdByName(cust), customer:cust, what:what, amount:amount, owner_id: currentUser.id,
     billing:document.getElementById('ctBilling').value, status:document.getElementById('ctStatus').value,
     start_date:document.getElementById('ctStart').value || null, renew_date:document.getElementById('ctRenew').value || null,
     web:document.getElementById('ctWeb').value.trim(), drive:document.getElementById('ctDrive').value.trim(),
@@ -896,11 +927,12 @@ async function saveContractPart(cust){
     if (ins.error || !ins.data || !ins.data.length) { toast('Could not save — ' + ((ins.error && ins.error.message) || 'check your connection and try again.'), true); return false; }
     state.contracts.unshift(mapContract(ins.data[0]));
   }
-  // A contract means the client booked — mark their lead as Booked on the Leads page.
+  // A contract means the client booked — mark their lead as Booked on the
+  // Leads page. This is your own mark, so it only shows on your screen.
   var lead = state.leads.find(function(x){ return x.name === cust; });
   if (lead && lead.status !== 'booked') {
-    lead.status = 'booked'; lead.bookedAt = new Date().toISOString().slice(0,10);
-    await sb.from('leads').update({status:'booked', booked_at: lead.bookedAt}).eq('id', lead.id);
+    lead.status = 'booked';
+    await saveState(lead.id, {status: 'booked'});
     renderLeads();
   }
   return true;
@@ -995,7 +1027,8 @@ async function addLeadManual(){
   var score = null;
   if (scoreRaw !== '') { score = Number(scoreRaw); if (isNaN(score) || score < 0 || score > 10) { err.textContent = 'Score must be between 0 and 10.'; return; } }
   var maxId = Math.max.apply(null, state.leads.map(function(l){ return l.id; }));
-  var row = {id:maxId+1, rank:0, name:name,
+  var maxRank = Math.max.apply(null, state.leads.map(function(l){ return l.rank; }));
+  var row = {id:maxId+1, rank:maxRank+1, name:name,
     industry:document.getElementById('mnIndustry').value.trim(),
     city:document.getElementById('mnCity').value.trim(),
     website:document.getElementById('mnWebsite').value.trim(),
@@ -1005,14 +1038,15 @@ async function addLeadManual(){
     problem:document.getElementById('mnProblem').value.trim(),
     solution:document.getElementById('mnSolution').value.trim(),
     score:score,
-    contact:document.getElementById('mnContact').value.trim(),
-    status:'new', built_at:null, contacted_at:null, booked_at:null};
+    contact:document.getElementById('mnContact').value.trim()};
   var res = await sb.from('leads').insert(row).select();
   if (res.error || !res.data || !res.data.length) { err.textContent = 'Could not save — ' + ((res.error && res.error.message) || 'check your connection and try again.'); return; }
   state.leads.push(mapLead(res.data[0]));
   sortLeads();
-  var rerr = await persistRanks();
-  if (rerr) { toast('Lead added, but the order may not be saved — try again.', true); }
+  if (isOwner) {
+    var rerr = await persistRanks();
+    if (rerr) { toast('Lead added, but the order may not be saved — try again.', true); }
+  }
   closeManual(); renderLeads();
   alert('Lead added as Not contacted.');
 }
@@ -1030,7 +1064,7 @@ async function confirmImport(){
     rows.push({id:maxId, rank:maxRank, name:String(obj.name).trim(), industry:obj.industry||'', city:obj.city||'',
       website:obj.website||'No website — not recorded', social:obj.social||'Not recorded', phone:obj.phone||'', email:obj.email||'',
       problem:obj.problem||'', solution:obj.solution||'', score:(obj.score==null||obj.score===''?0:Number(obj.score)),
-      contact:obj.contact||'', status:'new', built_at:null, contacted_at:null, booked_at:null});
+      contact:obj.contact||''});
   });
   if (!rows.length) { closeImport(); return; }
   var res = await sb.from('leads').insert(rows).select();
@@ -1310,9 +1344,9 @@ function renderLeads(){
       + '<option value="notavailable"'+(l.status==='notavailable'?' selected':'')+'>Not available</option>'
       + '<option value="pending"'+(l.status==='pending'?' selected':'')+'>Pending</option>'
       + '</select>'
+      + (l.followUpDate ? '<span class="fu-chip">Follow-up: '+esc(fmtDate(l.followUpDate))+'</span>' : '')
       + '<span class="cd-wrap"><label class="cd-label" for="cd'+l.id+'">Contact date</label><input type="date" class="cd-date" id="cd'+l.id+'" value="'+esc(l.contactDate||'')+'" onchange="setContactDate('+l.id+', this.value)">'+(l.contactDate ? '<button class="cd-clear" title="Clear contact date" onclick="clearContactDate('+l.id+')">×</button>' : '')+'</span>'
       + '<button class="note-btn'+(l.notes?' has-note':'')+'" onclick="toggleNoteEditor('+l.id+')" title="Add a note for this lead">✎ Note</button>'
-      + (l.followUpDate ? '<span class="fu-chip">Follow-up: '+esc(fmtDate(l.followUpDate))+'</span>' : '')
       + '</div>'
       + (l.notes ? '<div class="note-preview">✎ '+esc(l.notes.length>90 ? l.notes.slice(0,90)+'…' : l.notes)+'</div>' : '')
       + (noteEditing===l.id ? '<div class="note-editor"><textarea id="noteTa'+l.id+'" placeholder="Write a note for this lead…">'+esc(l.notes||'')+'</textarea><div class="note-actions"><button class="btn-save" style="margin-top:0" onclick="saveNote('+l.id+')">Save note</button><button class="btn-ghost" onclick="cancelNote()">Cancel</button></div></div>' : '')
