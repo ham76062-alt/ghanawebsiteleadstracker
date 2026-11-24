@@ -154,10 +154,15 @@ td .sub { color: #94a198; font-size: 12px; }
 #saveToast.err { background: #a93226; }
 #loadErr { display: none; background: #4a1a1a; border: 1px solid #7a2e2e; color: #f3c1c1; border-radius: 12px; padding: 16px 18px; margin-top: 18px; font-size: 14px; line-height: 1.55; }
 .login-wa { display: block; text-align: center; margin-top: 16px; color: #4ace51; font-size: 13px; text-decoration: none; }
+.login-link { display: block; width: 100%; text-align: center; margin-top: 12px; color: #4ace51; font-size: 13px; text-decoration: none; background: none; border: 0; cursor: pointer; padding: 0; font-family: inherit; }
+.login-msg { font-size: 13px; margin: 12px 0 0; min-height: 18px; line-height: 1.5; }
+.login-msg.ok { color: #7be495; }
+.login-msg.err { color: #ff8a80; }
 </style>
 </head>
 <body>
 <div id="loginScreen"><div class="login-card">
+<div id="viewLogin">
 <h1>Ghana Website Leads Tracker</h1>
 <p>Log in to open your tracker. Only one email can log in.</p>
 <label for="loginEmail">Email</label>
@@ -165,8 +170,31 @@ td .sub { color: #94a198; font-size: 12px; }
 <label for="loginPass">Password</label>
 <input id="loginPass" type="password" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()">
 <button class="btn-login" onclick="doLogin()">Log in</button>
-<a class="login-wa" target="_blank" rel="noreferrer" href="https://wa.me/0552244805">Can't log in? Contact Creator on WhatsApp</a>
+<button class="login-link" type="button" onclick="showForgot()">Forgot password?</button>
 <p id="loginErr"></p>
+<p id="loginOk" class="login-msg"></p>
+</div>
+<div id="viewForgot" style="display:none">
+<h1>Reset your password</h1>
+<p>Enter the email you use to log in. We will send you a link to set a new password.</p>
+<label for="forgotEmail">Email</label>
+<input id="forgotEmail" type="email" placeholder="Your email" autocomplete="username" onkeydown="if(event.key==='Enter') doForgot()">
+<button class="btn-login" onclick="doForgot()">Send reset link</button>
+<button class="login-link" type="button" onclick="showLoginView('login')">Back to log in</button>
+<p id="forgotMsg" class="login-msg"></p>
+</div>
+<div id="viewNewPass" style="display:none">
+<h1>Set a new password</h1>
+<p>Choose a new password for your tracker. Use at least 6 characters.</p>
+<label for="newPass">New password</label>
+<input id="newPass" type="password" placeholder="New password" autocomplete="new-password">
+<label for="newPass2">Confirm new password</label>
+<input id="newPass2" type="password" placeholder="Type it again" autocomplete="new-password" onkeydown="if(event.key==='Enter') doNewPass()">
+<button class="btn-login" onclick="doNewPass()">Save new password</button>
+<button class="login-link" type="button" onclick="showLoginView('login')">Back to log in</button>
+<p id="newPassMsg" class="login-msg"></p>
+</div>
+<a class="login-wa" target="_blank" rel="noreferrer" href="https://wa.me/0552244805">Can't log in? Contact Creator on WhatsApp</a>
 </div></div>
 <div class="wrap">
 <div class="topbar"><button class="btn-ghost" onclick="doLogout()">Log out</button></div>
@@ -348,6 +376,59 @@ async function doLogin(){
 async function doLogout(){
   try { await sb.auth.signOut(); } catch(e){}
   location.reload();
+}
+
+/* ---- Forgot password: three views inside the same login card ---- */
+var resetEmail = '';
+function showLoginView(which){
+  document.getElementById('viewLogin').style.display = which==='login' ? '' : 'none';
+  document.getElementById('viewForgot').style.display = which==='forgot' ? '' : 'none';
+  document.getElementById('viewNewPass').style.display = which==='newpass' ? '' : 'none';
+  document.getElementById('loginErr').textContent = '';
+  var ok = document.getElementById('loginOk'); if (ok) { ok.textContent = ''; ok.className = 'login-msg'; }
+  var m1 = document.getElementById('forgotMsg'); if (m1) { m1.textContent = ''; m1.className = 'login-msg'; }
+  var m2 = document.getElementById('newPassMsg'); if (m2) { m2.textContent = ''; m2.className = 'login-msg'; }
+}
+function setLoginMsg(id, text, ok){
+  var el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'login-msg ' + (ok ? 'ok' : 'err');
+}
+function showForgot(){
+  var em = document.getElementById('loginEmail').value.trim();
+  if (em) document.getElementById('forgotEmail').value = em;
+  showLoginView('forgot');
+}
+async function doForgot(){
+  var email = document.getElementById('forgotEmail').value.trim().toLowerCase();
+  if (!email || email.indexOf('@') < 1 || email.indexOf('.') < 0) { setLoginMsg('forgotMsg', 'Enter a valid email address.', false); return; }
+  if (!sb) { setLoginMsg('forgotMsg', 'Could not reach Supabase — check your internet connection and reload the page.', false); return; }
+  var res = await sb.auth.resetPasswordForEmail(email, { redirectTo: 'https://ghanawebsiteleadstracker.vercel.app/' });
+  if (res.error) {
+    var m = (res.error.message || '').toLowerCase();
+    if (m.indexOf('not found') !== -1 || m.indexOf('no user') !== -1) setLoginMsg('forgotMsg', 'No account with that email. Check the email and try again.', false);
+    else setLoginMsg('forgotMsg', 'Could not send the reset link. Check the email and try again.', false);
+    return;
+  }
+  resetEmail = email;
+  setLoginMsg('forgotMsg', 'Check your email — we sent a reset link to ' + email + '. It may take a minute, and check spam.', true);
+}
+async function doNewPass(){
+  var p1 = document.getElementById('newPass').value;
+  var p2 = document.getElementById('newPass2').value;
+  if (!p1 || !p2) { setLoginMsg('newPassMsg', 'Type your new password twice.', false); return; }
+  if (p1 !== p2) { setLoginMsg('newPassMsg', 'The two passwords do not match. Type them again.', false); return; }
+  if (p1.length < 6) { setLoginMsg('newPassMsg', 'Use at least 6 characters for your new password.', false); return; }
+  if (!sb) { setLoginMsg('newPassMsg', 'Could not reach Supabase — check your internet connection and reload the page.', false); return; }
+  var res = await sb.auth.updateUser({ password: p1 });
+  if (res.error) { setLoginMsg('newPassMsg', 'Could not change your password. The reset link may have expired — ask for a new one and try again.', false); return; }
+  try { await sb.auth.signOut(); } catch(e){}
+  if (resetEmail) document.getElementById('loginEmail').value = resetEmail;
+  document.getElementById('newPass').value = '';
+  document.getElementById('newPass2').value = '';
+  if (window.history && history.replaceState) history.replaceState(null, '', window.location.pathname + window.location.search);
+  showLoginView('login');
+  setLoginMsg('loginOk', 'Password changed. Log in with your new password.', true);
 }
 
 /* Supabase stores columns with underscores; the app uses camelCase. */
@@ -605,12 +686,19 @@ async function confirmImport(){
 }
 
 /* ---- Start: check the saved Supabase login, then load the data ---- */
+/* Password-reset return trip: Supabase sends the user back here with
+   #access_token=...&type=recovery in the address. Show the
+   set-a-new-password view instead of logging them straight in.
+   This check runs even if the Supabase script failed to load, so the
+   form still appears and can explain the connection problem. */
+var isRecovery = /(^|[&#])type=recovery(&|$)/.test(window.location.hash);
+if (isRecovery) { showLoginView('newpass'); }
 if (!window.supabase) {
   document.getElementById('loginErr').textContent = 'Could not reach Supabase — check your internet connection and reload the page.';
 } else {
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   sb.auth.getSession().then(function(res){
-    if (res.data && res.data.session) { showApp(); loadData(); }
+    if (res.data && res.data.session && !isRecovery) { showApp(); loadData(); }
   });
 }
 
