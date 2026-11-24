@@ -104,6 +104,7 @@ td .sub { color: #94a198; font-size: 12px; }
 .lead-action-btns { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 4px; }
 .lead-action-btns a { border-radius: 999px; padding: 8px 16px; font-size: 14px; font-weight: 600; text-decoration: none; }
 .btn-wa { background: #4caf50; color: #101511; }
+.btn-web { background: #2f6fb2; color: #ffffff; }
 .btn-line { background: #202a23; border: 1px solid #2b332e; color: #ffffff; }
 .lead-meta { color: #94a198; font-size: 13px; margin-top: 6px; }
 .lead-score { color: #c7cfd6; font-size: 13px; text-align: right; white-space: nowrap; }
@@ -119,8 +120,11 @@ td .sub { color: #94a198; font-size: 12px; }
 .lead-btns2 button { background: transparent; color: #94a198; padding: 9px 8px; font-size: 13px; }
 .lead-btns2 button.on-noreply { background: #b7791f; border-color: #b7791f; color: #111; }
 .lead-btns2 button.on-declined { background: #a93226; border-color: #a93226; color: #fff; }
-.lead-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 10px; }
+.lead-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
 .outcome-select { width: auto; min-width: 160px; appearance: auto; padding: 9px 10px; font-size: 13px; }
+.btype-select { width: auto; min-width: 140px; appearance: auto; padding: 9px 8px; font-size: 13px; }
+.fu-chip { display: inline-block; background: #173d24; color: #4ace51; border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.fu-date { width: auto; padding: 8px 10px; font-size: 13px; }
 .note-btn { background: transparent; color: #94a198; border: 1px solid #2b332e; border-radius: 999px; padding: 8px 14px; font-size: 13px; cursor: pointer; white-space: nowrap; }
 .note-btn.has-note { color: #4ace51; border-color: #2f9e44; }
 .note-preview { color: #94a198; font-size: 13px; line-height: 1.5; margin-top: 8px; }
@@ -139,6 +143,7 @@ td .sub { color: #94a198; font-size: 12px; }
 .lead-detail p { margin: 0 0 12px; }
 .lead-reset { color: #94a198; background: none; border: 0; font-size: 12px; cursor: pointer; margin-top: 10px; padding: 0; text-decoration: underline; }
 .section-title { color: #ffffff; font-size: 19px; margin: 26px 0 12px; }
+.fb-sub { color: #ffffff; font-size: 15px; margin: 20px 0 4px; }
 .dashed-add { display: block; width: 100%; background: transparent; border: 1.5px dashed #2f9e44; color: #4ace51; border-radius: 12px; padding: 15px; font-size: 15px; font-weight: 600; cursor: pointer; }
 .empty-card { background: #1a211c; border: 1px solid #2b332e; border-radius: 12px; padding: 16px 18px; margin-top: 12px; color: #c7cfd6; font-size: 14px; line-height: 1.55; }
 .form-card { background: #1a211c; border: 1px solid #2b332e; border-radius: 12px; padding: 18px; margin-top: 12px; }
@@ -250,12 +255,11 @@ td .sub { color: #94a198; font-size: 12px; }
 <div class="stat"><span class="stat-label">Contacted</span><span class="stat-num"><b id="stContacted">0</b> <i>/ <span class="tot">310</span></i></span><span class="stat-cap">site sent</span></div>
 <div class="stat"><span class="stat-label">Booked</span><span class="stat-num"><b id="stBooked">0</b> <i>/ <span class="tot">310</span></i></span><span class="stat-cap">paying clients</span></div>
 </div>
-<p class="process">Your process: research &rarr; build the site &rarr; contact them with it finished. Tap a lead&rsquo;s buttons to move it along &mdash; every mark is saved in Supabase, so it is the same on your phone and laptop.</p>
 <div class="search-row">
 <div style="flex:1"><label for="tradeInput">Trade / niche</label><div class="combo"><input id="tradeInput" placeholder="All niches — tap for niches, or type a niche, business name or phone number" autocomplete="off" onfocus="openCombo('trade')" oninput="onComboInput('trade')" onclick="openCombo('trade')"><span class="combo-clear" id="tradeClear" onclick="clearCombo('trade')" title="Clear filter">×</span><span class="combo-arrow">▾</span><div class="combo-list" id="tradeList"></div></div></div>
 <div style="flex:0.75"><label for="cityInput">City</label><div class="combo"><input id="cityInput" placeholder="All cities — tap for regions, or type a region or business name" autocomplete="off" onfocus="openCombo('city')" oninput="onComboInput('city')" onclick="openCombo('city')"><span class="combo-clear" id="cityClear" onclick="clearCombo('city')" title="Clear filter">×</span><span class="combo-arrow">▾</span><div class="combo-list" id="cityList"></div></div></div>
 <div style="flex:0.7"><label for="webInput">Website</label><div class="combo"><input id="webInput" placeholder="All websites — tap to filter by website problem" autocomplete="off" onfocus="openCombo('website')" oninput="onComboInput('website')" onclick="openCombo('website')"><span class="combo-clear" id="webClear" onclick="clearCombo('website')" title="Clear filter">×</span><span class="combo-arrow">▾</span><div class="combo-list" id="webList"></div></div></div>
-<div style="flex:0.5"><label for="newInput">Newly built</label><div class="combo"><input id="newInput" placeholder="All businesses" autocomplete="off" onfocus="openCombo('newly')" oninput="onComboInput('newly')" onclick="openCombo('newly')"><span class="combo-clear" id="newClear" onclick="clearCombo('newly')" title="Clear filter">×</span><span class="combo-arrow">▾</span><div class="combo-list" id="newList"></div></div></div>
+<div style="flex:0.5"><label for="btInput">Business type</label><div class="combo"><input id="btInput" placeholder="All businesses" autocomplete="off" onfocus="openCombo('btype')" oninput="onComboInput('btype')" onclick="openCombo('btype')"><span class="combo-clear" id="btClear" onclick="clearCombo('btype')" title="Clear filter">×</span><span class="combo-arrow">▾</span><div class="combo-list" id="btList"></div></div></div>
 </div>
 <div class="pills" id="pills">
 <button data-f="" class="active" onclick="setFilter('', this)">All leads</button>
@@ -266,6 +270,7 @@ td .sub { color: #94a198; font-size: 12px; }
 <button data-f="noreply" onclick="setFilter('noreply', this)">No reply (<span id="pcNoreply">0</span>)</button>
 <button data-f="declined" onclick="setFilter('declined', this)">Declined (<span id="pcDeclined">0</span>)</button>
 <button data-f="notavailable" onclick="setFilter('notavailable', this)">Not available (<span id="pcNotavail">0</span>)</button>
+<button data-f="pending" onclick="setFilter('pending', this)">Pending (<span id="pcPending">0</span>)</button>
 </div>
 <div class="count-row">
 <span class="count" id="count">310 of 310 leads</span>
@@ -288,7 +293,6 @@ td .sub { color: #94a198; font-size: 12px; }
 <div class="stat"><span class="stat-label">Contracts total</span><span class="stat-num"><b id="stContractsTotal">0</b></span><span class="stat-cap">active, pending &amp; ended</span></div>
 </div>
 <p class="process">Write down what each customer said, the changes you made after, and the contracts you have with them &mdash; everything is saved in Supabase, so it is the same on every device.</p>
-<div class="pills" id="customerChips" style="margin-top:22px"></div>
 <button class="dashed-add" style="margin-top:16px" onclick="toggleAddCustomer()">+ Add customer</button>
 <div id="addCustomerPanel" class="form-card" style="display:none">
 <h3>Customer feedback</h3>
@@ -299,12 +303,9 @@ td .sub { color: #94a198; font-size: 12px; }
 <textarea id="fbText" placeholder="What the customer said&hellip;"></textarea>
 <label for="fbChanges">Changes made after</label>
 <textarea id="fbChanges" placeholder="What you changed because of it&hellip;"></textarea>
-<button class="btn-save" id="fbSaveBtn" onclick="addFeedback()">Save feedback</button>
 </div>
 <h3 style="margin-top:20px">Contract</h3>
 <div id="ctForm">
-<label for="ctCustomer">Customer</label>
-<select id="ctCustomer"></select>
 <label for="ctWhat">What was agreed</label>
 <input id="ctWhat" placeholder="e.g. Full website rebuild + hosting">
 <div class="row">
@@ -322,14 +323,22 @@ td .sub { color: #94a198; font-size: 12px; }
 </div>
 <label for="ctNotes">Notes</label>
 <textarea id="ctNotes"></textarea>
-<button class="btn-save" id="ctSaveBtn" onclick="addContract()">Save contract</button>
+<button class="btn-save" id="panelSaveBtn" onclick="saveCustomerPanel()">Save feedback &amp; contract</button>
 </div>
 <div style="margin-top:16px; text-align:right"><button class="btn-ghost" onclick="toggleAddCustomer()">Close</button></div>
 </div>
-<h2 class="section-title">Customer feedback &amp; changes</h2>
+<div id="fbListView">
+<h2 class="section-title">Customer feedback and changes</h2>
+<div id="fbBusinessButtons"></div>
+</div>
+<div id="fbDetailView" style="display:none">
+<button class="btn-ghost" style="margin-top:16px" onclick="setFbCustomer('')">← All businesses</button>
+<h2 class="section-title" id="fbDetailName"></h2>
+<h3 class="fb-sub">Feedback</h3>
 <div id="fbList"></div>
-<h2 class="section-title">Contracts</h2>
+<h3 class="fb-sub">Contracts</h3>
 <div id="ctList"></div>
+</div>
 </div>
 
 <div id="pageUsers" style="display:none">
@@ -400,6 +409,7 @@ var OWNER_EMAIL = 'ham76062@gmail.com';
 var currentUser = null, isOwner = false;
 var fbCustomer = '';
 var noteEditing = null;
+var openDetails = {};
 
 function toast(msg, isErr){
   var t = document.getElementById('saveToast');
@@ -567,7 +577,7 @@ async function doNewPass(){
 
 /* Supabase stores columns with underscores; the app uses camelCase. */
 function mapLead(r){
-  return {id:r.id, rank:r.rank, name:r.name, industry:r.industry||'', city:r.city||'', website:r.website||'', social:r.social||'', phone:r.phone||'', email:r.email||'', problem:r.problem||'', solution:r.solution||'', score:r.score, contact:r.contact||'', notes:r.notes||'', status:r.status||'new', builtAt:r.built_at||null, contactedAt:r.contacted_at||null, bookedAt:r.booked_at||null};
+  return {id:r.id, rank:r.rank, name:r.name, industry:r.industry||'', city:r.city||'', website:r.website||'', social:r.social||'', phone:r.phone||'', email:r.email||'', problem:r.problem||'', solution:r.solution||'', score:r.score, contact:r.contact||'', notes:r.notes||'', businessType:r.business_type||'local', followUpDate:r.follow_up_date||'', status:r.status||'new', builtAt:r.built_at||null, contactedAt:r.contacted_at||null, bookedAt:r.booked_at||null};
 }
 function mapFeedback(r){
   return {id:r.id, leadId:r.lead_id, customer:r.customer, text:r.text, changes:r.changes||'', date:r.date||''};
@@ -614,7 +624,7 @@ async function setStatus(id, st){
 }
 
 /* ---- Outcome dropdown + per-lead notes ---- */
-function isOutcome(s){ return s==='noreply' || s==='declined' || s==='notavailable'; }
+function isOutcome(s){ return s==='noreply' || s==='declined' || s==='notavailable' || s==='pending'; }
 function setOutcome(id, val){
   var l = state.leads.find(function(x){ return x.id===id; });
   if (!l) return;
@@ -647,6 +657,43 @@ async function saveNote(id){
   renderLeads();
   toast('Saved ✓');
 }
+async function setBusinessType(id, val){
+  var l = state.leads.find(function(x){ return x.id===id; });
+  if (!l || !dataLoaded) return;
+  var old = l.businessType;
+  l.businessType = val;
+  renderLeads();
+  var res = await sb.from('leads').update({business_type: val}).eq('id', id);
+  if (res.error) {
+    l.businessType = old;
+    renderLeads();
+    toast('Could not save — check your connection and try again.', true);
+    return;
+  }
+  toast('Saved ✓');
+}
+function fmtDate(d){
+  var p = String(d||'').split('-');
+  if (p.length !== 3) return d || '';
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return Number(p[2]) + ' ' + months[Number(p[1])-1] + ' ' + p[0];
+}
+async function setFollowUpDate(id, val){
+  var l = state.leads.find(function(x){ return x.id===id; });
+  if (!l || !dataLoaded) return;
+  var old = l.followUpDate;
+  l.followUpDate = val || '';
+  renderLeads();
+  var res = await sb.from('leads').update({follow_up_date: val || null}).eq('id', id);
+  if (res.error) {
+    l.followUpDate = old;
+    renderLeads();
+    toast('Could not save — check your connection and try again.', true);
+    return;
+  }
+  toast('Saved ✓');
+}
+function clearFollowUpDate(id){ setFollowUpDate(id, ''); }
 async function persistRanks(){
   var rows = state.leads.map(function(l){ return {id:l.id, rank:l.rank}; });
   var res = await sb.from('leads').upsert(rows, {onConflict:'id'});
@@ -673,8 +720,8 @@ function leadIdByName(name){
 /* ---- Feedback & contracts: one Add customer panel ---- */
 function toggleAddCustomer(){
   editingFb = null; editingCt = null;
-  document.getElementById('fbSaveBtn').textContent = 'Save feedback';
-  document.getElementById('ctSaveBtn').textContent = 'Save contract';
+  var b = document.getElementById('panelSaveBtn');
+  if (b) b.textContent = 'Save feedback & contract';
   var p = document.getElementById('addCustomerPanel');
   p.style.display = p.style.display==='none' ? '' : 'none';
 }
@@ -688,21 +735,35 @@ function customerNames(){
   state.contracts.forEach(function(c){ if (c.customer) set[c.customer] = 1; });
   return Object.keys(set).sort();
 }
-function renderCustomerChips(){
+function renderBusinessButtons(){
   var names = customerNames();
-  var html = '<button class="'+(fbCustomer===''?'active':'')+'" onclick="setFbCustomer(\'\')">All customers</button>';
-  html += names.map(function(n){
-    return '<button class="'+(fbCustomer===n?'active':'')+'" onclick="setFbCustomer(decodeURIComponent(\''+encodeURIComponent(n)+'\'))">'+esc(n)+'</button>';
+  var el = document.getElementById('fbBusinessButtons');
+  if (!el) return;
+  if (!names.length) {
+    el.innerHTML = '<div class="empty-card">No customers yet. Tap “+ Add customer” above to record feedback or a contract.</div>';
+    return;
+  }
+  el.innerHTML = names.map(function(n){
+    return '<button class="dashed-add" style="margin-top:12px" onclick="setFbCustomer(decodeURIComponent(\''+encodeURIComponent(n)+'\'))">'+esc(n)+'</button>';
   }).join('');
-  document.getElementById('customerChips').innerHTML = html;
 }
 
 function renderFb(){
   var cust = fbCustomer;
-  renderCustomerChips();
+  renderBusinessButtons();
   var addSel = document.getElementById('fbAddCustomer');
-  var addSel2 = document.getElementById('ctCustomer');
-  if (cust) { if (addSel) addSel.value = cust; if (addSel2) addSel2.value = cust; }
+  if (cust && addSel) addSel.value = cust;
+  var listView = document.getElementById('fbListView');
+  var detailView = document.getElementById('fbDetailView');
+  if (!cust) {
+    if (listView) listView.style.display = '';
+    if (detailView) detailView.style.display = 'none';
+  } else {
+    if (listView) listView.style.display = 'none';
+    if (detailView) detailView.style.display = '';
+    var t = document.getElementById('fbDetailName');
+    if (t) t.textContent = cust;
+  }
   var fb = cust ? state.feedback.filter(function(f){ return f.customer===cust; }) : state.feedback;
   var ct = cust ? state.contracts.filter(function(c){ return c.customer===cust; }) : state.contracts;
   document.getElementById('stFb').textContent = state.feedback.length;
@@ -726,31 +787,24 @@ function editFeedback(id){
   document.getElementById('fbAddCustomer').value = f.customer;
   document.getElementById('fbText').value = f.text;
   document.getElementById('fbChanges').value = f.changes || '';
-  document.getElementById('fbSaveBtn').textContent = 'Save changes';
+  var fbBtn = document.getElementById('panelSaveBtn');
+  if (fbBtn) fbBtn.textContent = 'Save changes';
   document.getElementById('addCustomerPanel').style.display = '';
 }
-async function addFeedback(){
-  var cust = document.getElementById('fbAddCustomer').value;
-  var text = document.getElementById('fbText').value.trim();
-  var changes = document.getElementById('fbChanges').value.trim();
-  if (!cust) { alert('Pick a customer first.'); return; }
-  if (!text) { alert('Write what the customer said first.'); return; }
+async function saveFeedbackPart(cust, text, changes){
   if (editingFb) {
     var res = await sb.from('feedback').update({lead_id: leadIdByName(cust), customer: cust, text: text, changes: changes}).eq('id', editingFb);
-    if (res.error) { toast('Could not save — ' + (res.error.message || 'check your connection and try again.'), true); return; }
+    if (res.error) { toast('Could not save — ' + (res.error.message || 'check your connection and try again.'), true); return false; }
     var f = state.feedback.find(function(x){ return x.id === editingFb; });
     if (f) { f.leadId = leadIdByName(cust); f.customer = cust; f.text = text; f.changes = changes; }
     editingFb = null;
-    document.getElementById('fbSaveBtn').textContent = 'Save feedback';
   } else {
     var today = new Date().toISOString().slice(0,10);
     var ins = await sb.from('feedback').insert({lead_id: leadIdByName(cust), customer: cust, text: text, changes: changes, date: today}).select();
-    if (ins.error || !ins.data || !ins.data.length) { toast('Could not save — ' + ((ins.error && ins.error.message) || 'check your connection and try again.'), true); return; }
+    if (ins.error || !ins.data || !ins.data.length) { toast('Could not save — ' + ((ins.error && ins.error.message) || 'check your connection and try again.'), true); return false; }
     state.feedback.unshift(mapFeedback(ins.data[0]));
   }
-  document.getElementById('fbText').value=''; document.getElementById('fbChanges').value='';
-  renderFb();
-  toast('Saved ✓');
+  return true;
 }
 async function delFeedback(id){
   if (!confirm('Delete this feedback entry?')) return;
@@ -763,7 +817,7 @@ async function delFeedback(id){
 function editContract(id){
   var c = state.contracts.find(function(x){ return x.id === id; }); if (!c) return;
   editingCt = id;
-  document.getElementById('ctCustomer').value = c.customer;
+  document.getElementById('fbAddCustomer').value = c.customer;
   document.getElementById('ctWhat').value = c.what;
   document.getElementById('ctAmount').value = c.amount;
   document.getElementById('ctBilling').value = c.billing;
@@ -773,14 +827,13 @@ function editContract(id){
   document.getElementById('ctWeb').value = c.web || '';
   document.getElementById('ctDrive').value = c.drive || '';
   document.getElementById('ctNotes').value = c.notes || '';
-  document.getElementById('ctSaveBtn').textContent = 'Save changes';
+  var ctBtn = document.getElementById('panelSaveBtn');
+  if (ctBtn) ctBtn.textContent = 'Save changes';
   document.getElementById('addCustomerPanel').style.display = '';
 }
-async function addContract(){
-  var cust = document.getElementById('ctCustomer').value;
+async function saveContractPart(cust){
   var what = document.getElementById('ctWhat').value.trim();
   var amount = Number(document.getElementById('ctAmount').value || 0);
-  if (!what) { alert('Say what was agreed first.'); return; }
   var rec = {lead_id: leadIdByName(cust), customer:cust, what:what, amount:amount,
     billing:document.getElementById('ctBilling').value, status:document.getElementById('ctStatus').value,
     start_date:document.getElementById('ctStart').value || null, renew_date:document.getElementById('ctRenew').value || null,
@@ -788,14 +841,13 @@ async function addContract(){
     notes:document.getElementById('ctNotes').value.trim()};
   if (editingCt) {
     var res = await sb.from('contracts').update(rec).eq('id', editingCt);
-    if (res.error) { toast('Could not save — ' + (res.error.message || 'check your connection and try again.'), true); return; }
+    if (res.error) { toast('Could not save — ' + (res.error.message || 'check your connection and try again.'), true); return false; }
     var c = state.contracts.find(function(x){ return x.id === editingCt; });
     if (c) { c.leadId = rec.lead_id; c.customer = rec.customer; c.what = rec.what; c.amount = rec.amount; c.billing = rec.billing; c.status = rec.status; c.start = rec.start_date || ''; c.renew = rec.renew_date || ''; c.web = rec.web; c.drive = rec.drive; c.notes = rec.notes; }
     editingCt = null;
-    document.getElementById('ctSaveBtn').textContent = 'Save contract';
   } else {
     var ins = await sb.from('contracts').insert(rec).select();
-    if (ins.error || !ins.data || !ins.data.length) { toast('Could not save — ' + ((ins.error && ins.error.message) || 'check your connection and try again.'), true); return; }
+    if (ins.error || !ins.data || !ins.data.length) { toast('Could not save — ' + ((ins.error && ins.error.message) || 'check your connection and try again.'), true); return false; }
     state.contracts.unshift(mapContract(ins.data[0]));
   }
   // A contract means the client booked — mark their lead as Booked on the Leads page.
@@ -805,7 +857,34 @@ async function addContract(){
     await sb.from('leads').update({status:'booked', booked_at: lead.bookedAt}).eq('id', lead.id);
     renderLeads();
   }
-  ['ctWhat','ctAmount','ctStart','ctRenew','ctWeb','ctDrive','ctNotes'].forEach(function(id){ document.getElementById(id).value=''; });
+  return true;
+}
+/* One save button for the whole Add customer panel: saves the feedback
+   part if it has content, saves the contract part if it has content,
+   and shows one success message. The panel stays open afterwards. */
+async function saveCustomerPanel(){
+  var cust = document.getElementById('fbAddCustomer').value;
+  var fbText = document.getElementById('fbText').value.trim();
+  var fbChanges = document.getElementById('fbChanges').value.trim();
+  var ctWhat = document.getElementById('ctWhat').value.trim();
+  var hasFb = !!fbText || !!editingFb;
+  var hasCt = !!ctWhat || !!editingCt;
+  if (!hasFb && !hasCt) { toast('Write some feedback or fill in the contract first.', true); return; }
+  if (!cust) { toast('Pick a customer first.', true); return; }
+  if (editingFb && !fbText) { toast('Write what the customer said first.', true); return; }
+  if (editingCt && !ctWhat) { toast('Say what was agreed first.', true); return; }
+  if (hasFb) {
+    var okFb = await saveFeedbackPart(cust, fbText, fbChanges);
+    if (!okFb) return;
+    document.getElementById('fbText').value=''; document.getElementById('fbChanges').value='';
+  }
+  if (hasCt) {
+    var okCt = await saveContractPart(cust);
+    if (!okCt) return;
+    ['ctWhat','ctAmount','ctStart','ctRenew','ctWeb','ctDrive','ctNotes'].forEach(function(id){ document.getElementById(id).value=''; });
+  }
+  var b = document.getElementById('panelSaveBtn');
+  if (b) b.textContent = 'Save feedback & contract';
   renderFb();
   toast('Saved ✓');
 }
@@ -937,9 +1016,9 @@ if (!window.supabase) {
 /* ---- Kept exactly as the hosted copy (same look, same filters) ---- */
 var MAIN_CITIES = [['accra','Accra'],['tamale','Tamale'],['takoradi','Takoradi'],['sekondi','Takoradi'],['kumasi','Kumasi'],['tema','Tema'],['cape coast','Cape Coast'],['sunyani','Sunyani'],['tarkwa','Tarkwa'],['kasoa','Kasoa'],['elmina','Elmina'],['akim oda','Akim Oda'],['bunso','Bunso'],['sogakope','Sogakope'],['nsawam','Nsawam'],['biriwa','Biriwa'],['beyin','Beyin'],['abuesi','Takoradi'],['shama','Takoradi'],['anaji','Takoradi'],['nsuta','Tarkwa'],['ejisu','Kumasi'],['madina','Accra'],['adenta','Accra'],['agbogba','Accra'],['ogbojo','Accra'],['ablekuma','Accra'],['bolgatanga','Bolgatanga'],['sewfi','Sefwi-Asawinso'],['kintampo','Kintampo'],['obuasi','Obuasi'],['asamankese','Asamankese'],['akuse','Akuse'],['ewoyaa','Ewoyaa'],['nkwatia','Nkwatia'],['gomoa','Gomoa'],['aflao','Aflao'],['dodowa','Dodowa'],['agona swedru','Agona Swedru'],['upper east','Upper East Region'],['upper west','Upper West Region'],['western north','Western North Region'],['bono east','Bono East Region'],['north east','North East Region'],['savannah','Savannah Region'],['north tongu','Volta Region'],['central region','Cape Coast'],['ahafo','Ahafo Region'],['volta','Volta Region'],['oti','Oti Region'],['bono','Sunyani'],['ashanti','Kumasi']];
 var REGION_FOLD = {'Tema':'Accra','Kasoa':'Accra','Tarkwa':'Takoradi','Beyin':'Takoradi','Biriwa':'Cape Coast','Elmina':'Cape Coast','Akim Oda':'Eastern Region','Nsawam':'Eastern Region','Bunso':'Eastern Region','Sogakope':'Volta Region','Bolgatanga':'Upper East Region','Sefwi-Asawinso':'Western North Region','Kintampo':'Bono East Region','Obuasi':'Kumasi','Asamankese':'Eastern Region','Akuse':'Eastern Region','Ewoyaa':'Cape Coast','Nkwatia':'Eastern Region','Gomoa':'Cape Coast','Aflao':'Volta Region','Dodowa':'Accra','Agona Swedru':'Cape Coast'};
-var KIND_IDS = { trade: ['tradeInput','tradeList','tradeClear'], city: ['cityInput','cityList','cityClear'], website: ['webInput','webList','webClear'], newly: ['newInput','newList','newClear'] };
-var ALL_LABELS = { trade: 'All niches', city: 'All cities', website: 'All websites', newly: 'All businesses' };
-var comboState = { trade: { exact: '', text: '' }, city: { exact: '', text: '' }, website: { exact: '', text: '' }, newly: { exact: '', text: '' } };
+var KIND_IDS = { trade: ['tradeInput','tradeList','tradeClear'], city: ['cityInput','cityList','cityClear'], website: ['webInput','webList','webClear'], btype: ['btInput','btList','btClear'] };
+var ALL_LABELS = { trade: 'All niches', city: 'All cities', website: 'All websites', btype: 'All businesses' };
+var comboState = { trade: { exact: '', text: '' }, city: { exact: '', text: '' }, website: { exact: '', text: '' }, btype: { exact: '', text: '' } };
 var FIELDS = ['name','industry','city','website','social','phone','email','problem','solution','score','contact'];
 var FIELD_LABELS = {name:'Business name', industry:'Industry', city:'City', website:'Website condition', social:'Social presence', phone:'Phone', email:'Email', problem:'Problem spotted', solution:'Recommended solution', score:'Score', contact:'Best contact'};
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -947,7 +1026,7 @@ function normName(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,''
 function fmtMoney(n){ return Number(n||0).toLocaleString('en-GH'); }
 function fillCustomers(){
   var names = state.leads.map(function(l){return l.name}).sort();
-  ['fbAddCustomer','ctCustomer'].forEach(function(id){
+  ['fbAddCustomer'].forEach(function(id){
     var el = document.getElementById(id);
     if (!el) return;
     var cur = el.value;
@@ -967,7 +1046,7 @@ function showTab(which){
   if (which==='users') renderUsers();
 }
 function statusLabel(s){
-  return {new:'Not contacted', built:'Site built', contacted:'Contacted', booked:'Booked', noreply:'No reply', declined:'Declined', notavailable:'Not available'}[s] || s;
+  return {new:'Not contacted', built:'Site built', contacted:'Contacted', booked:'Booked', noreply:'No reply', declined:'Declined', notavailable:'Not available', pending:'Pending'}[s] || s;
 }
 function statusPill(s){
   return '<span class="pill '+s+'">'+statusLabel(s)+'</span>';
@@ -983,6 +1062,12 @@ function firstPhoneIntl(phone){
   if (digits.indexOf('233') === 0) return digits;
   if (digits.charAt(0) === '0') return '233' + digits.slice(1);
   return digits;
+}
+function firstDomain(text){
+  if (!text) return null;
+  var m = String(text).match(/(?:https?:\/\/)?(?:www\.)?(?:[a-z0-9][a-z0-9\-]*\.)+[a-z]{2,}/i);
+  if (!m) return null;
+  return m[0].replace(/^https?:\/\//i, '').replace(/^www\./i, '').toLowerCase();
 }
 function mainCity(city){
   var low = (city || '').toLowerCase();
@@ -1033,10 +1118,6 @@ function generalNiche(ind){
   for (var i = 0; i < rules.length; i++) { if (t.indexOf(rules[i][0]) !== -1) return rules[i][1]; }
   return s.split(/\s*\(| \/ | — |, /)[0].replace(/\.$/, '') || s;
 }
-function isNewlyBuilt(l){
-  var t = ((l.problem || '') + ' ' + (l.solution || '')).toLowerCase();
-  return /brand-new|newly opened|newly built|commissioned|began operations|operations from|opened (in )?(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]* 202[56]|launched (in )?202[56]/.test(t);
-}
 function comboInput(kind){ return document.getElementById(KIND_IDS[kind][0]); }
 function comboListEl(kind){ return document.getElementById(KIND_IDS[kind][1]); }
 function comboOptions(kind){
@@ -1046,7 +1127,7 @@ function comboOptions(kind){
     if (kind === 'trade') v = generalNiche(l.industry);
     else if (kind === 'city') v = regionCity(l.city);
     else if (kind === 'website') v = websiteCategory(l.website);
-    else if (kind === 'newly') v = isNewlyBuilt(l) ? 'Newly built' : null;
+    else if (kind === 'btype') v = (l.businessType || 'local') === 'foreign' ? 'Foreign business' : 'Local business';
     if (v) counts[v] = (counts[v]||0)+1;
   });
   return Object.keys(counts).sort().map(function(v){ return { label: v, count: counts[v] }; });
@@ -1105,7 +1186,7 @@ function clearCombo(kind){
   renderLeads();
 }
 function filteredLeads(){
-  var t = comboState.trade, c = comboState.city, w = comboState.website, n = comboState.newly;
+  var t = comboState.trade, c = comboState.city, w = comboState.website, bt = comboState.btype;
   return state.leads.filter(function(l){
     if (statusFilter && l.status !== statusFilter) return false;
     if (t.exact) { if (generalNiche(l.industry) !== t.exact) return false; }
@@ -1125,10 +1206,11 @@ function filteredLeads(){
       var q3 = w.text.toLowerCase();
       if (websiteCategory(l.website).toLowerCase().indexOf(q3) === -1 && (l.name||'').toLowerCase().indexOf(q3) === -1 && (l.website||'').toLowerCase().indexOf(q3) === -1) return false;
     }
-    if (n.exact) { if (!isNewlyBuilt(l)) return false; }
-    else if (n.text) {
-      var q4 = n.text.toLowerCase();
-      if (!(isNewlyBuilt(l) && 'newly built'.indexOf(q4) !== -1) && (l.name||'').toLowerCase().indexOf(q4) === -1) return false;
+    if (bt.exact) { var want = bt.exact === 'Foreign business' ? 'foreign' : 'local'; if ((l.businessType || 'local') !== want) return false; }
+    else if (bt.text) {
+      var q4 = bt.text.toLowerCase();
+      var typeLabel = (l.businessType || 'local') === 'foreign' ? 'foreign business' : 'local business';
+      if (typeLabel.indexOf(q4) === -1 && (l.name||'').toLowerCase().indexOf(q4) === -1) return false;
     }
     return true;
   });
@@ -1156,11 +1238,13 @@ function renderLeads(){
   document.getElementById('pcNoreply').textContent = c.noreply||0;
   document.getElementById('pcDeclined').textContent = c.declined||0;
   document.getElementById('pcNotavail').textContent = c.notavailable||0;
+  document.getElementById('pcPending').textContent = c.pending||0;
   var list = filteredLeads();
   document.getElementById('count').textContent = list.length + ' of ' + total + ' leads';
   var html = '';
   list.forEach(function(l){
     var intl = firstPhoneIntl(l.phone);
+    var site = firstDomain(l.website);
     var meta = [l.industry, l.city].filter(function(x){ return x; }).join(' · ') || '—';
     var scoreHtml = (l.score==null || l.score==='') ? 'Score <b>—</b>' : 'Score <b>'+l.score+'/10</b>';
     html += '<div class="lead-card">'
@@ -1173,22 +1257,31 @@ function renderLeads(){
       + '<option value="noreply"'+(l.status==='noreply'?' selected':'')+'>No reply</option>'
       + '<option value="declined"'+(l.status==='declined'?' selected':'')+'>Declined</option>'
       + '<option value="notavailable"'+(l.status==='notavailable'?' selected':'')+'>Not available</option>'
+      + '<option value="pending"'+(l.status==='pending'?' selected':'')+'>Pending</option>'
       + '</select>'
-      + '<button class="note-btn'+(l.notes?' has-note':'')+'" onclick="toggleNoteEditor('+l.id+')" title="Add a note for this lead">✎ Note</button></div>'
+      + '<select class="btype-select" title="Local or foreign business" onchange="setBusinessType('+l.id+', this.value)">'
+      + '<option value="local"'+((l.businessType||'local')==='local'?' selected':'')+'>Local business</option>'
+      + '<option value="foreign"'+(l.businessType==='foreign'?' selected':'')+'>Foreign business</option>'
+      + '</select>'
+      + '<button class="note-btn'+(l.notes?' has-note':'')+'" onclick="toggleNoteEditor('+l.id+')" title="Add a note for this lead">✎ Note</button>'
+      + (l.followUpDate ? '<span class="fu-chip">Follow-up: '+esc(fmtDate(l.followUpDate))+'</span>' : '')
+      + '</div>'
       + (l.notes ? '<div class="note-preview">✎ '+esc(l.notes.length>90 ? l.notes.slice(0,90)+'…' : l.notes)+'</div>' : '')
       + (noteEditing===l.id ? '<div class="note-editor"><textarea id="noteTa'+l.id+'" placeholder="Write a note for this lead…">'+esc(l.notes||'')+'</textarea><div class="note-actions"><button class="btn-save" style="margin-top:0" onclick="saveNote('+l.id+')">Save note</button><button class="btn-ghost" onclick="cancelNote()">Cancel</button></div></div>' : '')
-      + '<div><span class="lead-detail-toggle" id="tgl'+l.id+'" onclick="toggleDetail('+l.id+')">Problem, solution &amp; contact ▾</span></div>'
-      + '<div class="lead-detail" id="d'+l.id+'" style="display:none">'
+      + '<div><span class="lead-detail-toggle" id="tgl'+l.id+'" onclick="toggleDetail('+l.id+')">'+(openDetails[l.id] ? 'Hide details ▴' : 'Problem, solution &amp; contact ▾')+'</span></div>'
+      + '<div class="lead-detail" id="d'+l.id+'" style="display:'+(openDetails[l.id] ? '' : 'none')+'">'
       + '<p><b>Problem spotted:</b> '+esc(l.problem||'—')+'</p>'
       + "<p><b>What you'll build:</b> "+esc(l.solution||'—')+'</p>'
       + '<p><b>Social:</b> '+esc(l.social||'—')+'</p>'
       + '<p><b>Best contact:</b> '+esc(l.contact||'—')+'</p>'
       + '<p><b>Phone:</b> '+esc(l.phone||'—')+(l.email ? ' · <b>Email:</b> '+esc(l.email) : '')+'</p>'
+      + '<p><b>Follow-up date:</b> <input type="date" class="fu-date" id="fu'+l.id+'" value="'+esc(l.followUpDate||'')+'" onchange="setFollowUpDate('+l.id+', this.value)">'+(l.followUpDate ? ' <button class="btn-ghost" onclick="clearFollowUpDate('+l.id+')">Clear</button>' : '')+'</p>'
       + '<div class="lead-action-btns">'
       + (intl ? '<a class="btn-wa" target="_blank" rel="noreferrer" href="https://wa.me/'+intl+'">WhatsApp</a>' : '')
       + (intl ? '<a class="btn-line" href="tel:+'+intl+'">Call</a>' : '')
       + (l.email ? '<a class="btn-line" href="mailto:'+esc(l.email)+'">Email</a>' : '')
       + '<a class="btn-line" target="_blank" rel="noreferrer" href="https://www.google.com/maps/search/'+encodeURIComponent(l.name+' '+l.city+' Ghana')+'">Map</a>'
+      + (site ? '<a class="btn-web" target="_blank" rel="noopener" href="https://'+esc(site)+'">Website</a>' : '')
       + '</div></div>'
       + '</div>';
   });
@@ -1197,7 +1290,7 @@ function renderLeads(){
   fillCustomers();
 }
 function toggleForm(id){ var el=document.getElementById(id); el.style.display = el.style.display==='none' ? '' : 'none'; }
-function toggleDetail(id){ var el=document.getElementById('d'+id); var open = el.style.display==='none'; el.style.display = open ? '' : 'none'; var tg=document.getElementById('tgl'+id); if (tg) tg.textContent = open ? 'Hide details ▴' : 'Problem, solution & contact ▾'; }
+function toggleDetail(id){ var el=document.getElementById('d'+id); var open = el.style.display==='none'; openDetails[id] = open; el.style.display = open ? '' : 'none'; var tg=document.getElementById('tgl'+id); if (tg) tg.textContent = open ? 'Hide details ▴' : 'Problem, solution & contact ▾'; }
 function downloadCSV(){
   var list = filteredLeads();
   function q(v){ return '"'+String(v==null?'':v).replace(/"/g,'""')+'"'; }
