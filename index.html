@@ -184,6 +184,44 @@ td .sub { color: #94a198; font-size: 12px; }
 .login-msg { font-size: 13px; margin: 12px 0 0; min-height: 18px; line-height: 1.5; }
 .login-msg.ok { color: #7be495; }
 .login-msg.err { color: #ff8a80; }
+/* ---- Filter dropdown (round 6: replaces the pills row) ---- */
+.filter-wrap { position: relative; }
+.btn-filter { background: #28302a; color: #ffffff; border: 1px solid #3d4741; border-radius: 999px; padding: 10px 18px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.btn-filter.has-sel { border-color: #4ace51; color: #4ace51; }
+.filter-menu { position: absolute; right: 0; top: calc(100% + 6px); background: #1a211c; border: 1px solid #2b332e; border-radius: 12px; min-width: 240px; padding: 8px; z-index: 60; box-shadow: 0 10px 30px rgba(0,0,0,.5); display: none; }
+.filter-menu.open { display: block; }
+.filter-menu label { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 8px; cursor: pointer; font-size: 14px; color: #e8ecef; margin: 0; }
+.filter-menu label:hover { background: #2a332d; }
+.filter-menu input { width: auto; margin: 0; }
+.filter-menu .f-count { margin-left: auto; color: #94a198; font-size: 13px; }
+.filter-clear { display: block; width: 100%; background: transparent; border: 0; border-top: 1px solid #2b332e; color: #94a198; font-size: 13px; padding: 10px; margin-top: 6px; cursor: pointer; text-align: left; }
+.filter-clear:hover { color: #ffffff; }
+/* ---- Calendar page (round 6) ---- */
+.cal-nav { display: flex; align-items: center; gap: 10px; margin-top: 18px; }
+.cal-nav h2 { flex: 1; margin: 0; font-size: 18px; color: #ffffff; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 12px; }
+.cal-dow { color: #94a198; font-size: 12px; text-align: center; padding: 4px 0; font-weight: 600; }
+.cal-day { background: #1a211c; border: 1px solid #2b332e; border-radius: 10px; min-height: 76px; padding: 8px; cursor: pointer; }
+.cal-day:hover { border-color: #4ace51; }
+.cal-day.today { border-color: #4ace51; }
+.cal-day.sel { background: #223026; border-color: #4ace51; }
+.cal-day.blank { background: transparent; border-color: transparent; cursor: default; }
+.cal-num { font-weight: 700; font-size: 14px; }
+.cal-meta { font-size: 11px; line-height: 1.6; margin-top: 4px; }
+.cal-meta .c-called { color: #4ace51; display: block; }
+.cal-meta .c-booked { color: #e8c15a; display: block; }
+.cal-meta .c-due { color: #7fb3e8; display: block; }
+.cal-detail { margin-top: 20px; }
+.cal-detail h3 { margin: 0; font-size: 16px; color: #ffffff; }
+.cal-totals { color: #94a198; font-size: 13px; margin-top: 4px; }
+.cal-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 10px 0; border-top: 1px solid #2b332e; font-size: 14px; }
+.cal-row .nm { font-weight: 700; color: #ffffff; cursor: pointer; }
+.cal-row .nm:hover { text-decoration: underline; }
+.cal-row .sub { color: #94a198; font-size: 12px; text-align: right; white-space: nowrap; }
+.cal-empty { color: #94a198; font-size: 14px; margin-top: 12px; }
+@media (max-width: 720px) {
+  .cal-day { min-height: 60px; }
+}
 </style>
 </head>
 <body>
@@ -253,14 +291,15 @@ td .sub { color: #94a198; font-size: 12px; }
 <div class="tabs">
 <button id="tabLeads" class="active" onclick="showTab('leads')">Leads</button>
 <button id="tabFb" onclick="showTab('fb')">Feedback &amp; contracts</button>
+<button id="tabCal" onclick="showTab('cal')">Calendar</button>
 <button id="tabUsers" style="display:none" onclick="showTab('users')">Users</button>
 </div>
 
 <div id="pageLeads">
 <div class="stats">
 <div class="stat"><span class="stat-label">Researched</span><span class="stat-num"><b id="stResearched">…</b> <i>/ <span class="tot">…</span></i></span><span class="stat-cap">verified leads</span></div>
-<div class="stat"><span class="stat-label">Site built</span><span class="stat-num"><b id="stBuilt">…</b> <i>/ <span class="tot">…</span></i></span><span class="stat-cap">ready to send</span></div>
 <div class="stat"><span class="stat-label">Contacted</span><span class="stat-num"><b id="stContacted">…</b> <i>/ <span class="tot">…</span></i></span><span class="stat-cap">site sent</span></div>
+<div class="stat"><span class="stat-label">Site built</span><span class="stat-num"><b id="stBuilt">…</b> <i>/ <span class="tot">…</span></i></span><span class="stat-cap">ready to send</span></div>
 <div class="stat"><span class="stat-label">Booked</span><span class="stat-num"><b id="stBooked">…</b> <i>/ <span class="tot">…</span></i></span><span class="stat-cap">paying clients</span></div>
 </div>
 <div class="search-row">
@@ -269,20 +308,21 @@ td .sub { color: #94a198; font-size: 12px; }
 <div style="flex:0.7"><label for="webInput">Website</label><div class="combo"><input id="webInput" placeholder="All websites — tap to filter by website problem" autocomplete="off" onfocus="openCombo('website')" oninput="onComboInput('website')" onclick="openCombo('website')"><span class="combo-clear" id="webClear" onclick="clearCombo('website')" title="Clear filter">×</span><span class="combo-arrow">▾</span><div class="combo-list" id="webList"></div></div></div>
 <div style="flex:0.5"><label for="btInput">Business type</label><div class="combo"><input id="btInput" placeholder="All businesses" autocomplete="off" onfocus="openCombo('btype')" oninput="onComboInput('btype')" onclick="openCombo('btype')"><span class="combo-clear" id="btClear" onclick="clearCombo('btype')" title="Clear filter">×</span><span class="combo-arrow">▾</span><div class="combo-list" id="btList"></div></div></div>
 </div>
-<div class="pills" id="pills">
-<button data-f="" class="active" onclick="setFilter('', this)">All leads</button>
-<button data-f="new" onclick="setFilter('new', this)">Not contacted (<span id="pcNew">…</span>)</button>
-<button data-f="built" onclick="setFilter('built', this)">Site built (<span id="pcBuilt">…</span>)</button>
-<button data-f="contacted" onclick="setFilter('contacted', this)">Contacted (<span id="pcContacted">…</span>)</button>
-<button data-f="booked" onclick="setFilter('booked', this)">Booked (<span id="pcBooked">…</span>)</button>
-<button data-f="noreply" onclick="setFilter('noreply', this)">No reply (<span id="pcNoreply">…</span>)</button>
-<button data-f="declined" onclick="setFilter('declined', this)">Declined (<span id="pcDeclined">…</span>)</button>
-<button data-f="notavailable" onclick="setFilter('notavailable', this)">Not available (<span id="pcNotavail">…</span>)</button>
-<button data-f="pending" onclick="setFilter('pending', this)">Pending (<span id="pcPending">…</span>)</button>
-</div>
 <div class="count-row">
 <span class="count" id="count">Loading leads…</span>
 <span class="spacer"></span>
+<div class="filter-wrap"><button class="btn-filter" id="filterBtn" onclick="toggleFilterMenu(event)">Filter ▾</button>
+<div class="filter-menu" id="filterMenu">
+<label><input type="checkbox" data-f="new" onchange="toggleFilter('new')"> Not contacted <span class="f-count">(<span id="pcNew">…</span>)</span></label>
+<label><input type="checkbox" data-f="contacted" onchange="toggleFilter('contacted')"> Contacted <span class="f-count">(<span id="pcContacted">…</span>)</span></label>
+<label><input type="checkbox" data-f="built" onchange="toggleFilter('built')"> Site built <span class="f-count">(<span id="pcBuilt">…</span>)</span></label>
+<label><input type="checkbox" data-f="booked" onchange="toggleFilter('booked')"> Booked <span class="f-count">(<span id="pcBooked">…</span>)</span></label>
+<label><input type="checkbox" data-f="noreply" onchange="toggleFilter('noreply')"> No reply <span class="f-count">(<span id="pcNoreply">…</span>)</span></label>
+<label><input type="checkbox" data-f="declined" onchange="toggleFilter('declined')"> Declined <span class="f-count">(<span id="pcDeclined">…</span>)</span></label>
+<label><input type="checkbox" data-f="notavailable" onchange="toggleFilter('notavailable')"> Not available <span class="f-count">(<span id="pcNotavail">…</span>)</span></label>
+<label><input type="checkbox" data-f="pending" onchange="toggleFilter('pending')"> Pending <span class="f-count">(<span id="pcPending">…</span>)</span></label>
+<button class="filter-clear" onclick="clearFilters()">Clear all filters</button>
+</div></div>
 <button class="btn-import" onclick="openImportChoice()">Import Leads</button>
 <input id="csvFile" type="file" accept=".csv,text/csv" style="display:none" onchange="onImportFile(event)">
 <button class="btn-csv" id="downloadCsvBtn" onclick="downloadCSV()">Download CSV</button>
@@ -347,6 +387,13 @@ td .sub { color: #94a198; font-size: 12px; }
 <h3 class="fb-sub">Contracts</h3>
 <div id="ctList"></div>
 </div>
+</div>
+
+<div id="pageCal" style="display:none">
+<h2 class="section-title" style="margin-top:22px">Calendar</h2>
+<p class="process">Days you called or booked, from the contact dates and follow-up dates on your leads. Tap a day to see who you called.</p>
+<div id="calWrap"></div>
+<div id="calDetail"></div>
 </div>
 
 <div id="pageUsers" style="display:none">
@@ -420,7 +467,7 @@ var SUPABASE_URL = 'https://vukwidadaixetvoylroz.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_palBv4WswtwJ-HUfZEPqNw__4WqqeBE';
 var sb = null;
 var state = { leads: [], leadState: {}, feedback: [], contracts: [], users: [] };
-var statusFilter = '';
+/* Round 6: filters live in activeFilters (see the Filter dropdown). */
 var importRows = null, importMap = null;
 var editingFb = null, editingCt = null;
 var dataLoaded = false;
@@ -600,12 +647,20 @@ async function doNewPass(){
    dates, business type) live in lead_state and are merged in loadData,
    so each user only ever sees their own work on a lead. */
 function mapLead(r){
-  return {id:r.id, rank:r.rank, name:r.name, industry:r.industry||'', city:r.city||'', website:r.website||'', social:r.social||'', phone:r.phone||'', email:r.email||'', problem:r.problem||'', solution:r.solution||'', score:r.score, contact:r.contact||'', notes:'', businessType:'local', followUpDate:'', contactDate:'', status:'new'};
+  return {id:r.id, rank:r.rank, name:r.name, industry:r.industry||'', city:r.city||'', website:r.website||'', social:r.social||'', phone:r.phone||'', email:r.email||'', problem:r.problem||'', solution:r.solution||'', score:r.score, contact:r.contact||'', notes:'', businessType:'local', followUpDate:'', contactDate:'', status:'new', contacted:false, siteBuilt:false, booked:false, outcome:''};
 }
+/* Round 6: stages are three separate switches + an outcome of their own.
+   Rows saved before migration-06 only have the old single status, so the
+   switches are derived from it (exactly as it was — nothing extra on). */
 function mapState(r){
-  return {leadId:r.lead_id, status:r.status||'new', notes:r.notes||'', businessType:r.business_type||'local', followUpDate:r.follow_up_date||'', contactDate:r.contact_date||''};
+  var s = {leadId:r.lead_id, status:r.status||'new', notes:r.notes||'', businessType:r.business_type||'local', followUpDate:r.follow_up_date||'', contactDate:r.contact_date||''};
+  s.contacted = (r.contacted === true) || (r.contacted == null && s.status === 'contacted');
+  s.siteBuilt = (r.site_built === true) || (r.site_built == null && s.status === 'built');
+  s.booked = (r.booked === true) || (r.booked == null && s.status === 'booked');
+  s.outcome = (r.outcome != null && r.outcome !== '') ? r.outcome : (isOutcome(s.status) ? s.status : '');
+  return s;
 }
-var STATE_KEYS = {status:'status', notes:'notes', businessType:'business_type', followUpDate:'follow_up_date', contactDate:'contact_date'};
+var STATE_KEYS = {status:'status', notes:'notes', businessType:'business_type', followUpDate:'follow_up_date', contactDate:'contact_date', contacted:'contacted', siteBuilt:'site_built', booked:'booked', outcome:'outcome'};
 /* One write path for your own marks: upsert into lead_state, so the
    shared leads table is never touched by a mark. */
 async function saveState(id, patch){
@@ -617,7 +672,7 @@ async function saveState(id, patch){
   });
   var res = await sb.from('lead_state').upsert(row, {onConflict: 'user_id,lead_id'});
   if (res.error) return res.error;
-  var cur = state.leadState[id] || {status:'new', notes:'', businessType:'local', followUpDate:'', contactDate:''};
+  var cur = state.leadState[id] || {status:'new', contacted:false, siteBuilt:false, booked:false, outcome:'', notes:'', businessType:'local', followUpDate:'', contactDate:''};
   Object.keys(patch).forEach(function(k){ cur[k] = patch[k]; });
   state.leadState[id] = cur;
   return null;
@@ -662,7 +717,7 @@ async function loadData(){
   state.leads = lr.data.map(mapLead);
   state.leads.forEach(function(l){
     var s = state.leadState[l.id];
-    if (s) { l.status = s.status; l.notes = s.notes; l.businessType = s.businessType; l.followUpDate = s.followUpDate; l.contactDate = s.contactDate; }
+    if (s) { l.status = s.status; l.contacted = s.contacted; l.siteBuilt = s.siteBuilt; l.booked = s.booked; l.outcome = s.outcome; l.notes = s.notes; l.businessType = s.businessType; l.followUpDate = s.followUpDate; l.contactDate = s.contactDate; }
   });
   state.feedback = fr.data.map(mapFeedback);
   state.contracts = cr.data.map(mapContract);
@@ -671,16 +726,19 @@ async function loadData(){
   renderFb();
 }
 
-async function setStatus(id, st){
+/* Round 6: each stage is its own on/off switch. Tapping one flips only
+   that switch — the other two stay exactly as they were. */
+async function toggleStage(id, stage){
   var l = state.leads.find(function(x){return x.id===id});
   if (!l || !dataLoaded) return;
-  var oldStatus = l.status;
-  if (l.status === st) st = 'new';  // tapping the selected button again unselects it
-  l.status = st;
+  var key = stage === 'built' ? 'siteBuilt' : stage; // 'contacted' | 'siteBuilt' | 'booked'
+  var old = !!l[key];
+  l[key] = !old;
   renderLeads();
-  var err = await saveState(id, {status: st});
+  var patch = {}; patch[key] = l[key];
+  var err = await saveState(id, patch);
   if (err) {
-    l.status = oldStatus;
+    l[key] = old;
     renderLeads();
     toast('Could not save — check your connection and try again.', true);
     return;
@@ -690,15 +748,22 @@ async function setStatus(id, st){
 
 /* ---- Outcome dropdown + per-lead notes ---- */
 function isOutcome(s){ return s==='noreply' || s==='declined' || s==='notavailable' || s==='pending'; }
-function setOutcome(id, val){
+/* Round 6: the outcome is saved on its own. Picking or clearing it never
+   touches the Contacted / Site built / Booked switches. */
+async function setOutcome(id, val){
   var l = state.leads.find(function(x){ return x.id===id; });
-  if (!l) return;
-  if (!val) {
-    if (isOutcome(l.status)) setStatus(id, 'new');
-    else renderLeads();
+  if (!l || !dataLoaded) return;
+  var old = l.outcome || '';
+  l.outcome = val || '';
+  renderLeads();
+  var err = await saveState(id, {outcome: l.outcome});
+  if (err) {
+    l.outcome = old;
+    renderLeads();
+    toast('Could not save — check your connection and try again.', true);
     return;
   }
-  setStatus(id, val);
+  toast('Saved ✓');
 }
 function toggleNoteEditor(id){
   noteEditing = (noteEditing === id) ? null : id;
@@ -950,9 +1015,9 @@ async function saveContractPart(cust){
   // A contract means the client booked — mark their lead as Booked on the
   // Leads page. This is your own mark, so it only shows on your screen.
   var lead = state.leads.find(function(x){ return x.name === cust; });
-  if (lead && lead.status !== 'booked') {
-    lead.status = 'booked';
-    await saveState(lead.id, {status: 'booked'});
+  if (lead && !lead.booked) {
+    lead.booked = true;
+    await saveState(lead.id, {booked: true});
     renderLeads();
   }
   return true;
@@ -1167,25 +1232,81 @@ function fillCustomers(){
 function showTab(which){
   document.getElementById('pageLeads').style.display = which==='leads' ? '' : 'none';
   document.getElementById('pageFb').style.display = which==='fb' ? '' : 'none';
+  document.getElementById('pageCal').style.display = which==='cal' ? '' : 'none';
   document.getElementById('pageUsers').style.display = which==='users' ? '' : 'none';
   document.getElementById('tabLeads').className = which==='leads' ? 'active' : '';
   document.getElementById('tabFb').className = which==='fb' ? 'active' : '';
+  document.getElementById('tabCal').className = which==='cal' ? 'active' : '';
   var tu = document.getElementById('tabUsers');
   if (tu) tu.className = which==='users' ? 'active' : '';
   if (which==='fb') renderFb();
   if (which==='users') renderUsers();
+  if (which==='cal') renderCalendar();
 }
 function statusLabel(s){
   return {new:'Not contacted', built:'Site built', contacted:'Contacted', booked:'Booked', noreply:'No reply', declined:'Declined', notavailable:'Not available', pending:'Pending'}[s] || s;
 }
-function statusPill(s){
-  return '<span class="pill '+s+'">'+statusLabel(s)+'</span>';
+/* Round 6: the badge on a lead card. An outcome wins over the stages;
+   otherwise it shows the furthest stage reached. */
+function leadBadge(l){
+  if (l.outcome) return '<span class="pill '+l.outcome+'">'+statusLabel(l.outcome)+'</span>';
+  if (l.booked) return '<span class="pill booked">Booked</span>';
+  if (l.siteBuilt) return '<span class="pill built">Site built</span>';
+  if (l.contacted) return '<span class="pill contacted">Contacted</span>';
+  return '<span class="pill new">Not contacted</span>';
 }
-function setFilter(f, btn){
-  statusFilter = f;
-  document.querySelectorAll('#pills button').forEach(function(b){ b.className = b === btn ? 'active' : ''; });
+function statusPill(l){
+  return leadBadge(l);
+}
+/* Round 6: the stages + outcome of a lead, as text (used by the CSV). */
+function leadStatusText(l){
+  var parts = [];
+  if (l.contacted) parts.push('Contacted');
+  if (l.siteBuilt) parts.push('Site built');
+  if (l.booked) parts.push('Booked');
+  if (!parts.length) parts.push('Not contacted');
+  if (l.outcome) parts.push(statusLabel(l.outcome));
+  return parts.join(' · ');
+}
+/* Round 6: the Filter dropdown. activeFilters holds every filter ticked;
+   a lead shows if it matches ANY of them (ticking two shows both groups). */
+var activeFilters = {};
+function leadMatchesFilter(l, f){
+  if (f === 'new') return !l.contacted;
+  if (f === 'contacted') return !!l.contacted;
+  if (f === 'built') return !!l.siteBuilt;
+  if (f === 'booked') return !!l.booked;
+  return (l.outcome || '') === f;
+}
+function toggleFilter(f){
+  var box = document.querySelector('#filterMenu input[data-f="'+f+'"]');
+  if (box && box.checked) activeFilters[f] = true;
+  else delete activeFilters[f];
+  updateFilterBtn();
   renderLeads();
 }
+function clearFilters(){
+  activeFilters = {};
+  document.querySelectorAll('#filterMenu input[type="checkbox"]').forEach(function(b){ b.checked = false; });
+  updateFilterBtn();
+  renderLeads();
+}
+function updateFilterBtn(){
+  var btn = document.getElementById('filterBtn');
+  if (!btn) return;
+  var n = Object.keys(activeFilters).length;
+  btn.textContent = n ? 'Filter (' + n + ') ▾' : 'Filter ▾';
+  btn.className = 'btn-filter' + (n ? ' has-sel' : '');
+}
+function toggleFilterMenu(ev){
+  if (ev) ev.stopPropagation();
+  var m = document.getElementById('filterMenu');
+  if (m) m.classList.toggle('open');
+}
+document.addEventListener('click', function(e){
+  var m = document.getElementById('filterMenu');
+  if (m && m.classList.contains('open') && !e.target.closest('.filter-wrap')) m.classList.remove('open');
+});
 function firstPhoneIntl(phone){
   var first = (phone || '').split(/[/;]/)[0] || '';
   var digits = first.replace(/\D/g, '');
@@ -1322,7 +1443,8 @@ function clearCombo(kind){
 function filteredLeads(){
   var t = comboState.trade, c = comboState.city, w = comboState.website, bt = comboState.btype;
   return state.leads.filter(function(l){
-    if (statusFilter && l.status !== statusFilter) return false;
+    var fk = Object.keys(activeFilters);
+    if (fk.length && !fk.some(function(f){ return leadMatchesFilter(l, f); })) return false;
     if (t.exact) { if (generalNiche(l.industry) !== t.exact) return false; }
     else if (t.text) {
       var q = t.text.toLowerCase();
@@ -1358,8 +1480,16 @@ function renderLeads(){
       comboInput(kind).value = '';
     }
   });
-  var c = {new:0, built:0, contacted:0, booked:0};
-  state.leads.forEach(function(l){ c[l.status] = (c[l.status]||0)+1; });
+  /* Round 6: each switch is counted on its own, so a lead can count in
+     more than one column. "Not contacted" means the Contacted switch is off. */
+  var c = {new:0, built:0, contacted:0, booked:0, noreply:0, declined:0, notavailable:0, pending:0};
+  state.leads.forEach(function(l){
+    if (l.contacted) c.contacted++;
+    if (l.siteBuilt) c.built++;
+    if (l.booked) c.booked++;
+    if (!l.contacted) c.new++;
+    if (l.outcome) c[l.outcome] = (c[l.outcome]||0)+1;
+  });
   var total = state.leads.length;
   document.querySelectorAll('.tot').forEach(function(el){ el.textContent = total; });
   document.getElementById('stResearched').textContent = total;
@@ -1382,17 +1512,17 @@ function renderLeads(){
     var site = firstDomain(l.website);
     var meta = [l.industry, l.city].filter(function(x){ return x; }).join(' · ') || '—';
     var scoreHtml = (l.score==null || l.score==='') ? 'Score <b>—</b>' : 'Score <b>'+l.score+'/10</b>';
-    html += '<div class="lead-card">'
+    html += '<div class="lead-card" id="lead-'+l.id+'">'
       + '<div class="lead-top"><div><span class="lead-rank">'+l.rank+'</span><span class="lead-name" onclick="toggleDetail('+l.id+')">'+esc(l.name)+'</span><div class="lead-meta">'+esc(meta)+'</div></div>'
-      + '<div><div style="text-align:right">'+statusPill(l.status)+'</div><div class="lead-score" style="margin-top:6px">'+scoreHtml+'</div></div></div>'
+      + '<div><div style="text-align:right">'+statusPill(l)+'</div><div class="lead-score" style="margin-top:6px">'+scoreHtml+'</div></div></div>'
       + '<div class="lead-web"><b>Website:</b> '+esc(l.website||'—')+'</div>'
-      + '<div class="lead-btns"><button class="'+(l.status==='built'?'on-built':'')+'" onclick="setStatus('+l.id+',\'built\')">Site built</button><button class="'+(l.status==='contacted'?'on-contacted':'')+'" onclick="setStatus('+l.id+',\'contacted\')">Contacted</button><button class="'+(l.status==='booked'?'on-booked':'')+'" onclick="setStatus('+l.id+',\'booked\')">Booked</button></div>'
+      + '<div class="lead-btns"><button class="'+(l.contacted?'on-contacted':'')+'" onclick="toggleStage('+l.id+',\'contacted\')">Contacted</button><button class="'+(l.siteBuilt?'on-built':'')+'" onclick="toggleStage('+l.id+',\'built\')">Site built</button><button class="'+(l.booked?'on-booked':'')+'" onclick="toggleStage('+l.id+',\'booked\')">Booked</button></div>'
       + '<div class="lead-foot"><select class="outcome-select" onchange="setOutcome('+l.id+', this.value)">'
-      + '<option value=""'+(isOutcome(l.status)?'':' selected')+'>Outcome…</option>'
-      + '<option value="noreply"'+(l.status==='noreply'?' selected':'')+'>No reply</option>'
-      + '<option value="declined"'+(l.status==='declined'?' selected':'')+'>Declined</option>'
-      + '<option value="notavailable"'+(l.status==='notavailable'?' selected':'')+'>Not available</option>'
-      + '<option value="pending"'+(l.status==='pending'?' selected':'')+'>Pending</option>'
+      + '<option value=""'+(l.outcome?'':' selected')+'>Outcome…</option>'
+      + '<option value="noreply"'+(l.outcome==='noreply'?' selected':'')+'>No reply</option>'
+      + '<option value="declined"'+(l.outcome==='declined'?' selected':'')+'>Declined</option>'
+      + '<option value="notavailable"'+(l.outcome==='notavailable'?' selected':'')+'>Not available</option>'
+      + '<option value="pending"'+(l.outcome==='pending'?' selected':'')+'>Pending</option>'
       + '</select>'
       + (l.followUpDate ? '<span class="fu-chip">Follow-up: '+esc(fmtDate(l.followUpDate))+'</span>' : '')
       + '<span class="cd-wrap"><label class="cd-label" for="cd'+l.id+'">Contact date</label><input type="date" class="cd-date" id="cd'+l.id+'" value="'+esc(l.contactDate||'')+'" onchange="setContactDate('+l.id+', this.value)">'+(l.contactDate ? '<button class="cd-clear" title="Clear contact date" onclick="clearContactDate('+l.id+')">×</button>' : '')+'</span>'
@@ -1421,15 +1551,138 @@ function renderLeads(){
   document.getElementById('cards').innerHTML = html || '<div class="empty-card">No leads match your search.</div>';
   Object.keys(KIND_IDS).forEach(syncClear);
   fillCustomers();
+  if (document.getElementById('pageCal') && document.getElementById('pageCal').style.display !== 'none') renderCalendar();
 }
 function toggleForm(id){ var el=document.getElementById(id); el.style.display = el.style.display==='none' ? '' : 'none'; }
 function toggleDetail(id){ var el=document.getElementById('d'+id); var open = el.style.display==='none'; openDetails[id] = open; el.style.display = open ? '' : 'none'; var tg=document.getElementById('tgl'+id); if (tg) tg.textContent = open ? 'Hide details ▴' : 'Problem, solution & contact ▾'; }
+/* ---- Calendar page (round 6) ---- */
+var CAL_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+var CAL_DOW = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+var calYear = null, calMonth = null, calSelected = null;
+function calKey(y, m, d){
+  return y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+}
+function calTodayKey(){
+  var n = new Date();
+  return calKey(n.getFullYear(), n.getMonth(), n.getDate());
+}
+function calParseDay(str){
+  var p = String(str || '').split('-');
+  if (p.length !== 3) return null;
+  var d = new Date(+p[0], +p[1] - 1, +p[2]);
+  return isNaN(d.getTime()) ? null : d;
+}
+function calLongDate(str){
+  var d = calParseDay(str);
+  if (!d) return str;
+  return ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][(d.getDay() + 6) % 7] + ' ' + d.getDate() + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()] + ' ' + d.getFullYear();
+}
+/* Your own activity, grouped by date: calls from the contact date,
+   bookings from the Booked switch on those calls, follow-ups due. */
+function calData(){
+  var by = {};
+  state.leads.forEach(function(l){
+    if (l.contactDate) {
+      var e = by[l.contactDate] || (by[l.contactDate] = {called:[], booked:[], followups:[]});
+      e.called.push(l);
+      if (l.booked) e.booked.push(l);
+    }
+    if (l.followUpDate) {
+      var e2 = by[l.followUpDate] || (by[l.followUpDate] = {called:[], booked:[], followups:[]});
+      e2.followups.push(l);
+    }
+  });
+  return by;
+}
+function renderCalendar(){
+  var wrap = document.getElementById('calWrap');
+  var detail = document.getElementById('calDetail');
+  if (!wrap || !detail) return;
+  var now = new Date();
+  if (calYear == null) { calYear = now.getFullYear(); calMonth = now.getMonth(); }
+  if (!calSelected) calSelected = calTodayKey();
+  var by = calData();
+  var first = new Date(calYear, calMonth, 1);
+  var lead = (first.getDay() + 6) % 7; // Monday first
+  var days = new Date(calYear, calMonth + 1, 0).getDate();
+  var today = calTodayKey();
+  var h = '<div class="cal-nav"><button class="btn-ghost" onclick="calGo(-1)">‹ Prev</button><h2>' + CAL_MONTHS[calMonth] + ' ' + calYear + '</h2><button class="btn-ghost" onclick="calToday()">Today</button><button class="btn-ghost" onclick="calGo(1)">Next ›</button></div>';
+  h += '<div class="cal-grid">';
+  CAL_DOW.forEach(function(d){ h += '<div class="cal-dow">' + d + '</div>'; });
+  for (var i = 0; i < lead; i++) h += '<div class="cal-day blank"></div>';
+  for (var d = 1; d <= days; d++) {
+    var k = calKey(calYear, calMonth, d);
+    var e = by[k];
+    var cls = 'cal-day';
+    if (k === today) cls += ' today';
+    if (k === calSelected) cls += ' sel';
+    h += '<div class="' + cls + '" onclick="calSelect(\'' + k + '\')"><span class="cal-num">' + d + '</span>';
+    if (e) {
+      h += '<div class="cal-meta">';
+      if (e.called.length) h += '<span class="c-called">' + e.called.length + ' called</span>';
+      if (e.booked.length) h += '<span class="c-booked">' + e.booked.length + ' booked</span>';
+      if (e.followups.length) h += '<span class="c-due">' + e.followups.length + ' due</span>';
+      h += '</div>';
+    }
+    h += '</div>';
+  }
+  h += '</div>';
+  wrap.innerHTML = h;
+  // Day detail: the companies, by name — not just a total.
+  var e2 = by[calSelected] || {called:[], booked:[], followups:[]};
+  var dh = '<div class="cal-detail"><h3>' + esc(calLongDate(calSelected)) + '</h3>';
+  dh += '<div class="cal-totals">Called ' + e2.called.length + ' · Booked ' + e2.booked.length + ' · Follow-ups due ' + e2.followups.length + '</div>';
+  if (!e2.called.length && !e2.followups.length) {
+    dh += '<div class="cal-empty">Nothing recorded for this day.</div>';
+  } else {
+    if (e2.called.length) {
+      dh += '<div style="margin-top:12px">';
+      e2.called.forEach(function(l){
+        var note = [];
+        if (l.booked) note.push('Booked');
+        else if (l.siteBuilt) note.push('Site built');
+        if (l.outcome) note.push(statusLabel(l.outcome));
+        dh += '<div class="cal-row"><span class="nm" onclick="calJumpToLead(' + l.id + ')">' + esc(l.name) + '</span><span class="sub">' + esc([l.industry, l.city].filter(function(x){ return x; }).join(' · ') || '—') + (note.length ? ' · ' + esc(note.join(' · ')) : '') + '</span></div>';
+      });
+      dh += '</div>';
+    }
+    if (e2.followups.length) {
+      dh += '<h3 style="margin-top:18px">Follow-ups due</h3>';
+      e2.followups.forEach(function(l){
+        dh += '<div class="cal-row"><span class="nm" onclick="calJumpToLead(' + l.id + ')">' + esc(l.name) + '</span><span class="sub">' + esc([l.industry, l.city].filter(function(x){ return x; }).join(' · ') || '—') + '</span></div>';
+      });
+    }
+  }
+  dh += '</div>';
+  detail.innerHTML = dh;
+}
+function calGo(delta){
+  calMonth += delta;
+  while (calMonth < 0) { calMonth += 12; calYear--; }
+  while (calMonth > 11) { calMonth -= 12; calYear++; }
+  renderCalendar();
+}
+function calToday(){
+  var n = new Date();
+  calYear = n.getFullYear(); calMonth = n.getMonth();
+  calSelected = calTodayKey();
+  renderCalendar();
+}
+function calSelect(k){
+  calSelected = k;
+  renderCalendar();
+}
+function calJumpToLead(id){
+  showTab('leads');
+  var el = document.getElementById('lead-' + id);
+  if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+}
 function downloadCSV(){
   if (!isOwner) { alert('Only the administrator can download the CSV.'); return; }
   var list = filteredLeads();
   function q(v){ return '"'+String(v==null?'':v).replace(/"/g,'""')+'"'; }
-  var lines = [['Rank','Business','Industry','City','Website condition','Social presence','Phone','Email','Problem','Solution','Score','Best contact','Status'].map(q).join(',')];
-  list.forEach(function(l){ lines.push([l.rank,l.name,l.industry,l.city,l.website,l.social,l.phone,l.email,l.problem,l.solution,l.score,l.contact,statusLabel(l.status)].map(q).join(',')); });
+  var lines = [['Rank','Business','Industry','City','Website condition','Social presence','Phone','Email','Problem','Solution','Score','Best contact','Contacted','Site built','Booked','Outcome'].map(q).join(',')];
+  list.forEach(function(l){ lines.push([l.rank,l.name,l.industry,l.city,l.website,l.social,l.phone,l.email,l.problem,l.solution,l.score,l.contact,l.contacted?'Yes':'No',l.siteBuilt?'Yes':'No',l.booked?'Yes':'No',l.outcome?statusLabel(l.outcome):''].map(q).join(',')); });
   var blob = new Blob([lines.join('\n')], {type:'text/csv'});
   var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'ghana-website-leads.csv'; a.click();
 }
